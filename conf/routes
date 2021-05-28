@@ -8,6 +8,7 @@ GET     /api/project/:project_id/jobs @controllers.ProjectsController.jobsForPro
 GET     /api/project/:project_id/:branch_name/:job_name/artifacts @controllers.ProjectsController.checkArtifacts(project_id:Long, branch_name:String, job_name:String)
 GET     /api/project/:project_id/:branch_name/:job_name/buildinfo @controllers.ProjectsController.getBuildInfo(project_id:Long, branch_name:String, job_name:String)
 
+GET     /api/known_deployments      @controllers.DeploymentsController.listDeployments
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

@@ -22,3 +22,7 @@ libraryDependencies ++= Seq(
 libraryDependencies += "io.circe" %% "circe-yaml" % "0.12.0"
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
+
+libraryDependencies += "io.skuber" %% "skuber" % "2.6.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.14"
