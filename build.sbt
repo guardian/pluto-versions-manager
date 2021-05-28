@@ -19,4 +19,6 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
+libraryDependencies += "io.circe" %% "circe-yaml" % "0.12.0"
+
 libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
