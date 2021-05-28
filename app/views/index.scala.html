@@ -1,0 +1,18 @@
+@(cbVersion:String, deploymentRoot:String)
+
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Pluto Versions Manager</title>
+    </head>
+    <body>
+        <div id="app" />
+        <script>
+                const deploymentRootPath = "@(deploymentRoot)/";
+        </script>
+        <script
+        src="@(deploymentRoot)/assets/javascripts/bundle.js?v=@(cbVersion)"
+        type="text/javascript"
+        ></script>
+    </body>
+</html>

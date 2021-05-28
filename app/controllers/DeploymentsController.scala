@@ -17,7 +17,7 @@ class DeploymentsController @Inject() (kubernetes:kubernetes, cc:ControllerCompo
   private val logger = LoggerFactory.getLogger(getClass)
   def listDeployments = Action.async {
     kubernetes
-      .listDeployments
+      .listDeployments()
       .map(_.map(DeployedImageInfo.fromDeployment))
       .map(results=>Ok(results.asJson))
       .recover({
