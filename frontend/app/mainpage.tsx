@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { RouteComponentProps } from "react-router";
 import axios from "axios";
 import { Chip, Grid, makeStyles, Typography } from "@material-ui/core";
+import BuildsInfoCell from "./buildsinfocell";
+import DeploymentStatusIcon from "./deploymentstatusicon";
 
 const useStyles = makeStyles((theme) => ({
   infoGrid: {
@@ -21,15 +23,23 @@ const useStyles = makeStyles((theme) => ({
     padding: "0.6em",
   },
   infoCell: {
-    width: "500px",
+    width: "400px",
     borderWidth: "2px",
     borderRightStyle: "solid",
   },
   deployedVersionCell: {
-    width: "200px",
-      overflowWrap: "break-word",
+    width: "400px",
+    overflowWrap: "break-word",
     paddingLeft: "0.6em",
-    paddingRight: "0.6em"
+    paddingRight: "0.6em",
+    borderWidth: "2px",
+    borderRightStyle: "solid",
+  },
+  buildsInfoCell: {
+    width: "300px",
+    overflowWrap: "break-word",
+    paddingLeft: "0.6em",
+    paddingRight: "0.6em",
   },
   inlineText: {
     display: "inline",
@@ -42,12 +52,12 @@ const useStyles = makeStyles((theme) => ({
   cellTitle: {
     fontWeight: "bold",
     fontSize: "1.3em",
-    textAlign:"center"
+    textAlign: "center",
   },
   versionText: {
     fontWeight: "bold",
-    fontSize: "1.3em"
-  }
+    fontSize: "1.3em",
+  },
 }));
 
 const MainPage: React.FC<RouteComponentProps> = (props) => {
@@ -63,7 +73,11 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
       );
       switch (response.status) {
         case 200:
-          setDeployments(response.data.filter(info=>info.labels.hasOwnProperty("gitlab-project-id")));
+          setDeployments(
+            response.data.filter((info) =>
+              info.labels.hasOwnProperty("gitlab-project-id")
+            )
+          );
           setLastError(undefined);
           break;
         default:
@@ -81,51 +95,69 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
   }, []);
 
   return (
-    <Grid container className={classes.infoGrid} direction="column">
-      {deployments.map((info, idx) => (
-        <Grid
-          item
-          container
-          direction="row"
-          key={idx}
-          className={classes.gridRow}
-        >
-          <Grid item className={classes.infoCell}>
-            <Typography variant="h4" className={classes.inlineText}>
-              {info.deploymentName}
-            </Typography>
-            <Typography className={classes.inlineText}>
-              {info.namespace}
-            </Typography>
-            <br />
-            <Typography>
-              {info.readyReplicas} ready and {info.notReadyReplicas} not ready
-            </Typography>
-            {Object.keys(info.labels).map((labelName) => (
-              <Chip
-                key={labelName}
-                label={`${labelName}: ${info.labels[labelName]}`}
-                className={classes.deploymentLabel}
-              />
-            ))}
-          </Grid>
-          <Grid item className={classes.deployedVersionCell}>
-            <Typography className={classes.cellTitle}>Currently running</Typography>
-            <ul>
-              {info.deployedImages.map((imageInfo, idx) => (
-                  <li>
-                <Typography>
-                  {imageInfo.imageName.replace("/"," / ")}
-                </Typography>
-                      <Typography className={classes.versionText}>{imageInfo.version}</Typography>
-                  </li>
+    <>
+      <Typography variant="h2">Pluto Versions Manager</Typography>
+      <Grid container className={classes.infoGrid} direction="column">
+        {deployments.map((info, idx) => (
+          <Grid
+            item
+            container
+            direction="row"
+            key={idx}
+            className={classes.gridRow}
+          >
+            <Grid item className={classes.infoCell}>
+              <Typography variant="h4" className={classes.inlineText}>
+                {info.deploymentName}
+              </Typography>
+              <Typography className={classes.inlineText}>
+                {info.namespace}
+              </Typography>
+              <br />
+              <Typography>
+                {info.readyReplicas} ready and {info.notReadyReplicas} not ready
+                {info.readyReplicas && info.notReadyReplicas ? (
+                  <DeploymentStatusIcon
+                    availableReplicas={info.readyReplicas}
+                    notAvailableReplicas={info.notReadyReplicas}
+                  />
+                ) : null}
+              </Typography>
+              {Object.keys(info.labels).map((labelName) => (
+                <Chip
+                  key={labelName}
+                  label={`${labelName}: ${info.labels[labelName]}`}
+                  className={classes.deploymentLabel}
+                />
               ))}
-            </ul>
+            </Grid>
+            <Grid item className={classes.deployedVersionCell}>
+              <Typography className={classes.cellTitle}>
+                Currently running
+              </Typography>
+              <ul>
+                {info.deployedImages.map((imageInfo, idx) => (
+                  <li>
+                    <Typography>
+                      {imageInfo.imageName.replace("/", " / ")}
+                    </Typography>
+                    <Typography className={classes.versionText}>
+                      {imageInfo.version}
+                    </Typography>
+                  </li>
+                ))}
+              </ul>
+            </Grid>
+            <Grid item className={classes.buildsInfoCell}>
+              <BuildsInfoCell deploymentInfo={info} />
+            </Grid>
           </Grid>
-        </Grid>
-      ))}
-    </Grid>
+        ))}
+      </Grid>
+    </>
   );
 };
+
+export { useStyles };
 
 export default MainPage;

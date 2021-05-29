@@ -13,7 +13,7 @@ case class BuildInfo(
                     ci_commit_timestamp: ZonedDateTime,
                     ci_commit_title: Option[String],
                     ci_job_url: String,
-                    //ca_project_name: String,
+                    ci_project_name: String,
                     ci_merge_request_project_url: Option[String],
                     ci_merge_request_title: Option[String],
                     ci_pipeline_iid: Int,

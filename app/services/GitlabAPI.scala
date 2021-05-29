@@ -73,7 +73,8 @@ class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer:
     from.find(_.lowercaseName() == "location").map(_.value())
 
   protected def makeRequestRaw(method:HttpMethod, url:String, moreHeaders:Map[String,String], bodyContent:Option[ByteString]):Future[ByteString] = {
-      val entity = bodyContent match {
+    logger.debug(s"${method} $url")
+    val entity = bodyContent match {
         case None=>
           HttpEntity.Empty
         case Some(content)=>
