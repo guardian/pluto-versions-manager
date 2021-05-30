@@ -6,4 +6,7 @@ class HttpError(statusCode:StatusCode, errorString: String) extends RuntimeExcep
   override def toString: String = s"Server replied ${statusCode}: $errorString"
 
   override def getMessage: String = toString
+
+  def getStatusCode = statusCode
+  def getErrorString = errorString
 }

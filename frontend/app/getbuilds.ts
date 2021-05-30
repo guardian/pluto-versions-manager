@@ -3,9 +3,15 @@ import axios from "axios";
 async function getLatestMasterBuildInternal(
   projectId: string,
   buildJob: string
-) {
+):Promise<BuildInfo> {
   const url = `/api/project/${projectId}/master/${buildJob}/buildinfo`;
-  return await axios.get<BuildInfo>(url);
+  const response = await axios.get<BuildInfo>(url);
+  switch(response.status) {
+    case 200:
+      return response.data;
+    default:
+      throw `Server returned ${response.status}`;
+  }
 }
 
 function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
@@ -15,34 +21,29 @@ function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
     return undefined;
   }
 }
+
+function getGHPublishingJob(deploymentInfo: DeployedImageInfo): string | undefined {
+  if(deploymentInfo.labels.hasOwnProperty("gitlab-publishing-job")) {
+    return deploymentInfo.labels["gitlab-publishing-job"];
+  } else {
+    return undefined;
+  }
+}
+
 async function getLatestMasterBuild(deploymentInfo: DeployedImageInfo) {
-  const possibleJobNames = ["deploy", "uploads", "docker"];
   const maybeProjectId = getGHProjectId(deploymentInfo);
   if (!maybeProjectId) {
+    console.log(`${deploymentInfo.deploymentName}: can't get build info because there is no gitlab-project-id set in the labels`);
     return;
   }
-  for (let i = 0; i < possibleJobNames.length; i += 1) {
-    const jobName = possibleJobNames[i];
-    console.log(jobName);
-    try {
-      const response = await getLatestMasterBuildInternal(
-        maybeProjectId,
-        jobName
-      );
-      switch (response.status) {
-        case 200:
-          return response.data;
-        case 404:
-          continue;
-        case 500:
-          continue;
-        default:
-          throw `Server error ${response.status}`;
-      }
-    } catch (e) {
-      console.warn("Could not get with job name ", jobName, ": ", e);
-    }
+
+  const jobName = getGHPublishingJob(deploymentInfo);
+  if(!jobName) {
+    console.log(`${deploymentInfo.deploymentName}: can't get build info because there is not gitlab-publishing-job set in the labels`);
+    return;
   }
+
+  return getLatestMasterBuildInternal(maybeProjectId, jobName);
 }
 
 export { getLatestMasterBuild };

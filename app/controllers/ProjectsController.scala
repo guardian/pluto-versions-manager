@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{ContentType, ContentTypes, HttpEntity, HttpResp
 import akka.stream.Materializer
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
-import services.GitlabAPI
+import services.{GitlabAPI, HttpError}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
@@ -82,6 +82,13 @@ class ProjectsController @Inject() (config:Configuration, cc:ControllerComponent
       case None=>
         NotFound(GenericErrorResponse("not_found", "no build info can be found for that job of that branch of that project. Consult the logs for more details").asJson)
     }).recover({
+      case httpErr:HttpError=>
+        if(httpErr.getStatusCode==StatusCodes.NotFound) {
+          NotFound(GenericErrorResponse("not_found", "build info is not available from this build").asJson)
+        } else {
+          logger.error(s"Could not extract build info: ${httpErr.getMessage}")
+          InternalServerError(GenericErrorResponse("error", httpErr.getMessage).asJson)
+        }
       case err:Throwable=>
         logger.error(s"Could not extract build info: ${err.getMessage}", err)
         InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
