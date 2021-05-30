@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{ContentType, ContentTypes, HttpEntity, HttpResp
 import akka.stream.Materializer
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
-import services.{GitlabAPI, HttpError}
+import services.{GitlabAPI, HttpError, ZipReader}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
@@ -15,7 +15,6 @@ import io.circe.generic.auto._
 import models.responses.GenericErrorResponse
 import org.slf4j.LoggerFactory
 import play.api.libs.circe.Circe
-import utils.ZipReader
 
 @Singleton
 class ProjectsController @Inject() (config:Configuration, cc:ControllerComponents)

@@ -3,7 +3,6 @@ package controllers
 import models.DeployedImageInfo
 import play.api.libs.circe.Circe
 import play.api.mvc.{AbstractController, ControllerComponents}
-import utils.kubernetes
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -11,6 +10,7 @@ import io.circe.syntax._
 import io.circe.generic.auto._
 import models.responses.GenericErrorResponse
 import org.slf4j.LoggerFactory
+import services.kubernetes
 
 @Singleton
 class DeploymentsController @Inject() (kubernetes:kubernetes, cc:ControllerComponents) extends AbstractController(cc) with Circe {

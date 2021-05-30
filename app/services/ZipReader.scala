@@ -1,17 +1,14 @@
-package utils
+package services
 
 import akka.util.ByteString
+import io.circe.generic.auto._
+import io.circe.yaml.parser
+import models.BuildInfo
 import org.slf4j.LoggerFactory
 
-import java.io.{ByteArrayInputStream, InputStream}
-import java.nio.ByteBuffer
+import java.io.ByteArrayInputStream
 import java.util.zip.{ZipEntry, ZipInputStream}
-import scala.collection.mutable.ArrayBuffer
 import scala.util.{Failure, Success, Try}
-import io.circe.yaml.parser
-import io.circe.generic.auto._
-import io.circe.syntax._
-import models.BuildInfo
 
 class ZipReader(bytes:Array[Byte]) {
   private val logger = LoggerFactory.getLogger(getClass)

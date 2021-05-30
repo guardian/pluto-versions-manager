@@ -1,4 +1,4 @@
-package utils
+package services
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
@@ -6,7 +6,6 @@ import models.DeployedImageInfo
 import play.api.Configuration
 import skuber._
 import skuber.apps.v1.{Deployment, DeploymentList}
-import skuber.json.format._
 
 import java.io.File
 import javax.inject.{Inject, Singleton}
