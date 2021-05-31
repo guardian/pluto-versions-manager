@@ -42,5 +42,5 @@ interface BuildInfo {
     ci_merge_request_project_url?:string;
     ci_merge_request_title?:string;
     ci_pipeline_iid: number;
-    built_image?:string;
+    built_image?:DockerImage;
 }
