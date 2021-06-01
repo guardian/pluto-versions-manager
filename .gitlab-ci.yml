@@ -13,7 +13,7 @@ frontend:
     - yarn install
     - yarn lint
     - yarn test
-    - yarn build:prod
+    - yarn build
   cache:
     key: ${CI_COMMIT_REF_SLUG}-node
     paths:
