@@ -1,4 +1,8 @@
-import {CompareVersionResult, compareVersionResults, getLatestMasterBuild} from "../app/getbuilds";
+import {
+  CompareVersionResult,
+  compareVersionResults,
+  getLatestMasterBuild,
+} from "../app/getbuilds";
 import moxios from "moxios";
 
 describe("compareVersionResults", () => {
@@ -148,22 +152,22 @@ describe("compareVersionResults", () => {
     };
 
     expect(compareVersionResults(deployed, available)).toEqual(
-        CompareVersionResult.NOTHING_AVAILABLE
+      CompareVersionResult.NOTHING_AVAILABLE
     );
   });
 });
 
-describe("getLatestMasterBuild",  ()=>{
-  beforeEach(()=>moxios.install());
-  afterEach(()=>moxios.uninstall());
+describe("getLatestMasterBuild", () => {
+  beforeEach(() => moxios.install());
+  afterEach(() => moxios.uninstall());
 
-  it("should extract the project id and job name from the DeployedImageInfo and request results from the server", (done)=> {
+  it("should extract the project id and job name from the DeployedImageInfo and request results from the server", (done) => {
     const deployed: DeployedImageInfo = {
       deploymentName: "test",
       namespace: "test",
       labels: {
         "gitlab-project-id": "12345678",
-        "gitlab-publishing-job": "docker"
+        "gitlab-publishing-job": "docker",
       },
       deployedImages: [
         {
@@ -179,7 +183,9 @@ describe("getLatestMasterBuild",  ()=>{
       const req = moxios.requests.mostRecent();
 
       try {
-        expect(req.url).toEqual("/api/project/12345678/master/docker/buildinfo");
+        expect(req.url).toEqual(
+          "/api/project/12345678/master/docker/buildinfo"
+        );
       } catch (e) {
         done.fail(e);
       }
@@ -198,26 +204,26 @@ describe("getLatestMasterBuild",  ()=>{
 
       await req.respondWith({
         status: 200,
-        response: available
+        response: available,
       });
 
       const result = await resultProm;
       try {
         expect(result).toEqual(available);
         done();
-      } catch(e) {
+      } catch (e) {
         done.fail(e);
       }
-    })
+    });
   });
 
-  it("should fail if the server returns a non-200 response", (done)=>{
+  it("should fail if the server returns a non-200 response", (done) => {
     const deployed: DeployedImageInfo = {
       deploymentName: "test",
       namespace: "test",
       labels: {
         "gitlab-project-id": "12345678",
-        "gitlab-publishing-job": "docker"
+        "gitlab-publishing-job": "docker",
       },
       deployedImages: [
         {
@@ -235,22 +241,22 @@ describe("getLatestMasterBuild",  ()=>{
           const req = moxios.requests.mostRecent();
 
           try {
-            expect(req.url).toEqual("/api/project/12345678/master/docker/buildinfo");
+            expect(req.url).toEqual(
+              "/api/project/12345678/master/docker/buildinfo"
+            );
           } catch (e) {
             done.fail(e);
           }
 
           const response = {
             status: "error",
-            detail: "Aieeeeeeee"
-          }
-
+            detail: "Aieeeeeeee",
+          };
 
           await req.respondWith({
             status: 500,
-            response: response
+            response: response,
           });
-
         });
         await resultProm;
         done.fail("Expected an exception but didn't get one");
@@ -258,7 +264,7 @@ describe("getLatestMasterBuild",  ()=>{
         expect(e).toEqual("Server returned 500");
         done();
       }
-    }
+    };
     return testIt();
-  })
-})
+  });
+});

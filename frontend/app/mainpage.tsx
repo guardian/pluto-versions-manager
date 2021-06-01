@@ -4,6 +4,7 @@ import axios from "axios";
 import { Chip, Grid, makeStyles, Typography } from "@material-ui/core";
 import BuildsInfoCell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
+import DockerImageName from "./dockerimagename";
 
 const useStyles = makeStyles((theme) => ({
   infoGrid: {
@@ -36,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     borderRightStyle: "solid",
   },
   buildsInfoCell: {
-    width: "300px",
+    width: "400px",
     overflowWrap: "break-word",
     paddingLeft: "0.6em",
     paddingRight: "0.6em",
@@ -53,10 +54,6 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold",
     fontSize: "1.3em",
     textAlign: "center",
-  },
-  versionText: {
-    fontWeight: "bold",
-    fontSize: "1.3em",
   },
 }));
 
@@ -138,12 +135,7 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
               <ul>
                 {info.deployedImages.map((imageInfo, idx) => (
                   <li>
-                    <Typography>
-                      {imageInfo.imageName.replace("/", " / ")}
-                    </Typography>
-                    <Typography className={classes.versionText}>
-                      {imageInfo.version}
-                    </Typography>
+                    <DockerImageName key={idx} image={imageInfo} />
                   </li>
                 ))}
               </ul>

@@ -1,7 +1,7 @@
 package models
 
 import io.circe.Decoder.Result
-import io.circe.{Decoder, HCursor}
+import io.circe.{Decoder, DecodingFailure, HCursor}
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -20,7 +20,15 @@ case class BuildInfo(
                     built_image:Option[DockerImage]
                     )
 
-//object BuildInfoDecoder {
-//  implicit val zdtDecoder:Decoder[ZonedDateTime] = Decoder
-//    .decodeZonedDateTimeWithFormatter(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"))
-//}
+object DockerImageDecoder {
+  implicit val dockerImageDecoder:Decoder[DockerImage] = new Decoder[DockerImage] {
+    override def apply(c: HCursor): Result[DockerImage] = {
+      c.as[String].flatMap(stringVal=> {
+        DockerImage.parseName(stringVal) match {
+          case None => Left(DecodingFailure("Could not parse Docker image name", c.history))
+          case Some(dockerImage)=> Right(dockerImage)
+        }
+      })
+    }
+  }
+}

@@ -98,6 +98,7 @@ class ZipReader(bytes:Array[Byte]) {
    * @return
    */
   def locateBuildInfo() = locateBuildInfoContent().map(_.map(bytes=>{
+    import models.DockerImageDecoder._
     parser
       .parse(bytes.utf8String)
       .flatMap(_.as[BuildInfo]) match {

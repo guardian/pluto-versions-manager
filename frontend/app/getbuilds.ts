@@ -6,7 +6,9 @@ async function getLatestBuildInternal(
   branchName: string
 ): Promise<BuildInfo> {
   const url = `/api/project/${projectId}/${branchName}/${buildJob}/buildinfo`;
-  const response = await axios.get<BuildInfo>(url, {validateStatus: ()=>true});
+  const response = await axios.get<BuildInfo>(url, {
+    validateStatus: () => true,
+  });
   switch (response.status) {
     case 200:
       return response.data;
@@ -88,7 +90,8 @@ function compareVersionResults(
 
   try {
     const numericVersionAvailable = parseInt(available.built_image.version);
-    if(Number.isNaN(numericVersionAvailable)) return CompareVersionResult.NON_NUMERIC;
+    if (Number.isNaN(numericVersionAvailable))
+      return CompareVersionResult.NON_NUMERIC;
 
     const relevantDeployedImages = deployment.deployedImages.filter(
       (img) => img.imageName == available.built_image?.imageName
@@ -96,7 +99,8 @@ function compareVersionResults(
     if (relevantDeployedImages.length == 0)
       return CompareVersionResult.NOTHING_AVAILABLE;
     const numericVersionDeployed = parseInt(relevantDeployedImages[0].version);
-    if(Number.isNaN(numericVersionDeployed)) return CompareVersionResult.NON_NUMERIC;
+    if (Number.isNaN(numericVersionDeployed))
+      return CompareVersionResult.NON_NUMERIC;
 
     if (numericVersionAvailable == numericVersionDeployed) {
       return CompareVersionResult.SAME;
