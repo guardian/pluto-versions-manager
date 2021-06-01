@@ -25,6 +25,9 @@ const localStyles = makeStyles((theme) => ({
   warning: {
     color: theme.palette.warning.dark,
   },
+  dialog: {
+    padding: "1em"
+  }
 }));
 
 const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
@@ -96,7 +99,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
         </Typography>
       ) : null}
       {showingDialog && updateType == Updates.NotRequired ? (
-        <Dialog open={showingDialog} onClose={handleDialogClose}>
+        <Dialog className={classes.dialog} open={showingDialog} onClose={handleDialogClose}>
           <Typography variant="h4">
             Update {props.deploymentInfo.deploymentName}
           </Typography>
@@ -108,7 +111,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
         </Dialog>
       ) : null}
       {showingDialog && updateType == Updates.Downgrade ? (
-        <Dialog open={showingDialog} onClose={handleDialogClose}>
+        <Dialog className={classes.dialog} open={showingDialog} onClose={handleDialogClose}>
           <Typography variant="h4">
             Downgrade {props.deploymentInfo.deploymentName}
           </Typography>
@@ -139,7 +142,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
         </Dialog>
       ) : null}
       {showingDialog && updateType == Updates.Upgrade ? (
-        <Dialog open={showingDialog} onClose={handleDialogClose}>
+        <Dialog className={classes.dialog} open={showingDialog} onClose={handleDialogClose}>
           <Typography variant="h4">
             Upgrade {props.deploymentInfo.deploymentName}
           </Typography>

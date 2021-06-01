@@ -26,3 +26,10 @@ libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
 libraryDependencies += "io.skuber" %% "skuber" % "2.6.0"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.14"
+
+val scalacacheVersion = "0.28.0"
+libraryDependencies ++= Seq (
+  "com.github.cb372" %% "scalacache-memcached",
+  "com.github.cb372" %% "scalacache-core",
+  "com.github.cb372" %% "scalacache-circe",
+).map(_ % scalacacheVersion)
