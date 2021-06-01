@@ -1,15 +1,25 @@
-import React, {useEffect, useState} from "react";
-import {useStyles} from "./mainpage";
-import {Button, Dialog, Grid, LinearProgress, makeStyles, Typography,} from "@material-ui/core";
-import {getLatestMasterBuild} from "./getbuilds";
+import React, { useEffect, useState } from "react";
+import { useStyles } from "./mainpage";
+import {
+  Button,
+  Dialog,
+  Grid,
+  LinearProgress,
+  makeStyles,
+  Typography,
+} from "@material-ui/core";
+import { getLatestMasterBuild, requestUpdate } from "./getbuilds";
 import DockerImageName from "./dockerimagename";
-import NeedsUpdate, {Updates} from "./needsupdate";
+import NeedsUpdate, { Updates } from "./needsupdate";
 import clsx from "clsx";
-import SystemNotification, {SystemNotifcationKind} from "./system_notification";
-import {Error} from "@material-ui/icons";
+import SystemNotification, {
+  SystemNotifcationKind,
+} from "./system_notification";
+import { Error } from "@material-ui/icons";
 
 interface BuildsInfoCellProps {
   deploymentInfo: DeployedImageInfo;
+  onUpdateInitiated?: () => void;
 }
 
 const localStyles = makeStyles((theme) => ({
@@ -19,9 +29,9 @@ const localStyles = makeStyles((theme) => ({
   warning: {
     color: theme.palette.warning.dark,
   },
-  dialog: {
-    padding: "1em"
-  }
+  updateDialog: {
+    padding: "1em",
+  },
 }));
 
 const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
@@ -31,7 +41,8 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
   const [notFound, setNotFound] = useState(false);
   const [showingDialog, setShowingDialog] = useState(false);
   const [updateType, setUpdateType] = useState("");
-  const [failureMessage, setFailureMessage] = useState<string|undefined>(undefined);
+  const [failureMessage, setFailureMessage] =
+    useState<string | undefined>(undefined);
 
   const parentClasses = useStyles();
   const classes = localStyles();
@@ -65,14 +76,39 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
 
   const performUpdate = () => {
     setShowingDialog(false);
-    SystemNotification.open(SystemNotifcationKind.Info, "I should be doing something now....");
+    if (masterBuild?.built_image) {
+      requestUpdate(
+        masterBuild.built_image,
+        props.deploymentInfo.deploymentName
+      )
+        .then(() =>
+          props.onUpdateInitiated ? props.onUpdateInitiated() : null
+        )
+        .catch((err) => {
+          console.error(err);
+          SystemNotification.open(
+            SystemNotifcationKind.Error,
+            "Internal error occurred and the reqeust was not sent. See console for details."
+          );
+        });
+    } else {
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        "Can't request update if there is no current build set"
+      );
+    }
   };
 
   return (
     <>
       <Typography className={parentClasses.cellTitle}>Available</Typography>
       {loading ? <LinearProgress variant="indeterminate" /> : null}
-      {failureMessage ? <Typography><Error/>Could not determine available versions: {failureMessage}</Typography> : null}
+      {failureMessage ? (
+        <Typography>
+          <Error />
+          Could not determine available versions: {failureMessage}
+        </Typography>
+      ) : null}
 
       {masterBuild?.built_image ? (
         <>
@@ -97,7 +133,11 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
         </Typography>
       ) : null}
       {showingDialog && updateType == Updates.NotRequired ? (
-        <Dialog className={classes.dialog} open={showingDialog} onClose={handleDialogClose}>
+        <Dialog
+          classes={{ paper: classes.updateDialog }}
+          open={showingDialog}
+          onClose={handleDialogClose}
+        >
           <Typography variant="h4">
             Update {props.deploymentInfo.deploymentName}
           </Typography>
@@ -109,7 +149,11 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
         </Dialog>
       ) : null}
       {showingDialog && updateType == Updates.Downgrade ? (
-        <Dialog className={classes.dialog} open={showingDialog} onClose={handleDialogClose}>
+        <Dialog
+          classes={{ paper: classes.updateDialog }}
+          open={showingDialog}
+          onClose={handleDialogClose}
+        >
           <Typography variant="h4">
             Downgrade {props.deploymentInfo.deploymentName}
           </Typography>
@@ -140,7 +184,11 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
         </Dialog>
       ) : null}
       {showingDialog && updateType == Updates.Upgrade ? (
-        <Dialog className={classes.dialog} open={showingDialog} onClose={handleDialogClose}>
+        <Dialog
+          classes={{ paper: classes.updateDialog }}
+          open={showingDialog}
+          onClose={handleDialogClose}
+        >
           <Typography variant="h4">
             Upgrade {props.deploymentInfo.deploymentName}
           </Typography>

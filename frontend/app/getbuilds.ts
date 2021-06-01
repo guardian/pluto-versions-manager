@@ -1,4 +1,7 @@
 import axios from "axios";
+import SystemNotification, {
+  SystemNotifcationKind,
+} from "./system_notification";
 
 async function getLatestBuildInternal(
   projectId: string,
@@ -114,4 +117,64 @@ function compareVersionResults(
   }
 }
 
-export { getLatestMasterBuild, compareVersionResults, CompareVersionResult };
+function getCookie(key: string) {
+  const b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+  return b ? b.pop() : "";
+}
+
+async function requestUpdate(to: DockerImage, deploymentName: string) {
+  const requestBody: UpdateDeploymentRequest = {
+    to: to,
+    deploymentName: deploymentName,
+  };
+
+  const result = await axios.post("/api/deployment/update", requestBody, {
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "Csrf-Token": getCookie("pvm-csrf"), //this must match the value of play.filters.csrf.cookie.name in application.conf
+    },
+    validateStatus: (status) => true,
+  });
+
+  switch (result.status) {
+    case 200:
+      SystemNotification.open(
+        SystemNotifcationKind.Success,
+        "Update is now underway. Use the Refresh button to check when the deployment completes."
+      );
+      break;
+    case 403 | 401:
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        "Permission denied. You are either not an administrator or your login expired."
+      );
+      break;
+    case 409:
+      const response = result.data as ConflictError;
+      console.error(
+        `Server expected one of ${response.deployed} but we requested ${response.expected}`
+      );
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        "Could not perform the update because the deployed image has a different name to the requested one"
+      );
+      break;
+    default:
+      const responseText =
+        result.data && result.data.hasOwnProperty("detail")
+          ? result.data.detail
+          : result.data.toString();
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        `Could not perform update: ${responseText}`
+      );
+      break;
+  }
+}
+export {
+  getLatestMasterBuild,
+  compareVersionResults,
+  CompareVersionResult,
+  requestUpdate,
+};

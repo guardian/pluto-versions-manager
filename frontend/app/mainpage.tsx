@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { RouteComponentProps } from "react-router";
 import axios from "axios";
-import { Chip, Grid, makeStyles, Typography } from "@material-ui/core";
+import { Button, Chip, Grid, makeStyles, Typography } from "@material-ui/core";
 import BuildsInfoCell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
-import SystemNotification from "./system_notification";
+import SystemNotification, {
+  SystemNotifcationKind,
+} from "./system_notification";
+import { Cached } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   infoGrid: {
@@ -60,7 +63,6 @@ const useStyles = makeStyles((theme) => ({
 
 const MainPage: React.FC<RouteComponentProps> = (props) => {
   const [deployments, setDeployments] = useState<DeployedImageInfo[]>([]);
-  const [lastError, setLastError] = useState<string | undefined>(undefined);
 
   const classes = useStyles();
 
@@ -76,26 +78,54 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
               info.labels.hasOwnProperty("gitlab-project-id")
             )
           );
-          setLastError(undefined);
           break;
         default:
           console.error(`server returned ${response.status}`);
-          setLastError(`server returned ${response.status}`);
+          SystemNotification.open(
+            SystemNotifcationKind.Error,
+            `Could not load deployments from cluster: server returned ${response.status}`
+          );
           break;
       }
     } catch (e) {
       console.error("Could not load deployments: ", e);
-      setLastError("Could not load data, see logs for details.");
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        `Could not load deployments from cluster: ${e}`
+      );
     }
   };
+
   useEffect(() => {
     refresh();
   }, []);
 
+  /**
+   * when an update is performed, then refresh the view after 1 second
+   */
+  const onUpdateInitiated = () => {
+    console.log("update was initiated, scheduling refresh");
+    window.setTimeout(() => refresh(), 1000);
+  };
+
   return (
     <>
-      <SystemNotification/>
-      <Typography variant="h2">Pluto Versions Manager</Typography>
+      <SystemNotification />
+      <Grid
+        container
+        justify="space-between"
+        alignItems="center"
+        style={{ marginRight: "1em" }}
+      >
+        <Grid item>
+          <Typography variant="h2">Pluto Versions Manager</Typography>
+        </Grid>
+        <Grid item>
+          <Button variant="outlined" startIcon={<Cached />} onClick={refresh}>
+            Refresh
+          </Button>
+        </Grid>
+      </Grid>
       <Grid container className={classes.infoGrid} direction="column">
         {deployments.map((info, idx) => (
           <Grid
@@ -143,7 +173,10 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
               </ul>
             </Grid>
             <Grid item className={classes.buildsInfoCell}>
-              <BuildsInfoCell deploymentInfo={info} />
+              <BuildsInfoCell
+                deploymentInfo={info}
+                onUpdateInitiated={onUpdateInitiated}
+              />
             </Grid>
           </Grid>
         ))}
