@@ -6,7 +6,7 @@ async function getLatestBuildInternal(
   branchName: string
 ): Promise<BuildInfo> {
   const url = `/api/project/${projectId}/${branchName}/${buildJob}/buildinfo`;
-  const response = await axios.get<BuildInfo>(url);
+  const response = await axios.get<BuildInfo>(url, {validateStatus: ()=>true});
   switch (response.status) {
     case 200:
       return response.data;
