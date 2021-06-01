@@ -12,6 +12,8 @@ case class DockerImage (imageName:String, version:String) {
         None
     }
   }
+
+  override def toString = s"$imageName:$version"
 }
 
 object DockerImage {

@@ -9,6 +9,7 @@ import {
 } from "@material-ui/core";
 import { AppSwitcher, Header } from "pluto-headers";
 import MainPage from "./mainpage";
+import SystemNotification from "./system_notification";
 
 interface RootProps {}
 interface RootState {}

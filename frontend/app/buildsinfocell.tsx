@@ -1,21 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useStyles } from "./mainpage";
-import {
-  Button,
-  Dialog,
-  Grid,
-  LinearProgress,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
-import { getLatestMasterBuild } from "./getbuilds";
+import React, {useEffect, useState} from "react";
+import {useStyles} from "./mainpage";
+import {Button, Dialog, Grid, LinearProgress, makeStyles, Typography,} from "@material-ui/core";
+import {getLatestMasterBuild} from "./getbuilds";
 import DockerImageName from "./dockerimagename";
-import NeedsUpdate, { Updates } from "./needsupdate";
+import NeedsUpdate, {Updates} from "./needsupdate";
 import clsx from "clsx";
+import SystemNotification, {SystemNotifcationKind} from "./system_notification";
+import {Error} from "@material-ui/icons";
 
 interface BuildsInfoCellProps {
   deploymentInfo: DeployedImageInfo;
-  onError?: (errorDesc: string) => void;
 }
 
 const localStyles = makeStyles((theme) => ({
@@ -37,6 +31,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
   const [notFound, setNotFound] = useState(false);
   const [showingDialog, setShowingDialog] = useState(false);
   const [updateType, setUpdateType] = useState("");
+  const [failureMessage, setFailureMessage] = useState<string|undefined>(undefined);
 
   const parentClasses = useStyles();
   const classes = localStyles();
@@ -54,7 +49,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
       .catch((err) => {
         setLoading(false);
         console.error("Could not get master build info");
-        if (props.onError) props.onError(err.toString);
+        setFailureMessage(err.toString());
       });
   }, [props.deploymentInfo]);
 
@@ -69,13 +64,16 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
   };
 
   const performUpdate = () => {
-    console.log("not implemented yet");
+    setShowingDialog(false);
+    SystemNotification.open(SystemNotifcationKind.Info, "I should be doing something now....");
   };
 
   return (
     <>
       <Typography className={parentClasses.cellTitle}>Available</Typography>
       {loading ? <LinearProgress variant="indeterminate" /> : null}
+      {failureMessage ? <Typography><Error/>Could not determine available versions: {failureMessage}</Typography> : null}
+
       {masterBuild?.built_image ? (
         <>
           <NeedsUpdate

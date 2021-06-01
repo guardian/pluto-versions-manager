@@ -5,6 +5,7 @@ import { Chip, Grid, makeStyles, Typography } from "@material-ui/core";
 import BuildsInfoCell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
+import SystemNotification from "./system_notification";
 
 const useStyles = makeStyles((theme) => ({
   infoGrid: {
@@ -93,6 +94,7 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
 
   return (
     <>
+      <SystemNotification/>
       <Typography variant="h2">Pluto Versions Manager</Typography>
       <Grid container className={classes.infoGrid} direction="column">
         {deployments.map((info, idx) => (
