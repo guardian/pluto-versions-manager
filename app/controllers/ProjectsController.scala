@@ -3,6 +3,7 @@ package controllers
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ContentType, ContentTypes, HttpEntity, HttpResponse, MediaTypes, StatusCodes}
 import akka.stream.Materializer
+import auth.{BearerTokenAuth, Security}
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
 import services.{GitlabAPI, HttpError, ZipReader}
@@ -23,13 +24,15 @@ import scalacache.modes.scalaFuture._
 import scala.concurrent.duration.Duration
 
 @Singleton
-class ProjectsController @Inject() (config:Configuration, cc:ControllerComponents)
-                                   (implicit actorSystem: ActorSystem, mat:Materializer) extends AbstractController(cc) with Circe {
+class ProjectsController @Inject() (cc:ControllerComponents,
+                                    override val bearerTokenAuth:BearerTokenAuth,
+                                    override val config:Configuration)
+                                   (implicit actorSystem: ActorSystem, mat:Materializer) extends AbstractController(cc) with Circe with Security {
   private implicit val memcachedCache = MemcachedCache[BuildInfo](config.get[String]("memcached.location"))
   private val maybeCacheTTL = config.getOptional[Duration]("memcached.ttl")
 
   private val api = new GitlabAPI(config.get[String]("gitlab.api-token"))
-  private val logger = LoggerFactory.getLogger(getClass)
+  override protected val logger = LoggerFactory.getLogger(getClass)
 
   /**
    * takes a future from the gitlab API object and converts it into a Future[Result]
@@ -51,15 +54,15 @@ class ProjectsController @Inject() (config:Configuration, cc:ControllerComponent
           InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
       })
 
-  def knownProjects = Action.async {
+  def knownProjects = IsAdminAsync { uid=> req=>
     genericOutput(api.listProjects)
   }
 
-  def jobsForProject(projectId:Long) = Action.async {
+  def jobsForProject(projectId:Long) = IsAdminAsync { uid=> req=>
     genericOutput(api.jobsForProject(projectId))
   }
 
-  def checkArtifacts(projectId:Long, branchName:String, jobName:String) = Action.async {
+  def checkArtifacts(projectId:Long, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
     api.artifactsZipForBranch(projectId, branchName, jobName)
       .map(bytes=>{
         val entity = play.api.http.HttpEntity.Strict(bytes, Some("application/zip"))
@@ -75,7 +78,7 @@ class ProjectsController @Inject() (config:Configuration, cc:ControllerComponent
       })
   }
 
-  def getBuildInfo(projectId:Long, branchName:String, jobName:String) = Action.async {
+  def getBuildInfo(projectId:Long, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
     val cacheKey = s"$projectId-$branchName-$jobName"
     scalacache.get(cacheKey).flatMap({
       case Some(buildInfo)=>

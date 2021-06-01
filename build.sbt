@@ -43,6 +43,11 @@ libraryDependencies += "io.skuber" %% "skuber" % "2.6.0"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.14"
 
+//authentication
+libraryDependencies ++= Seq(
+  "com.nimbusds" % "nimbus-jose-jwt" % "8.21",
+)
+
 val scalacacheVersion = "0.28.0"
 libraryDependencies ++= Seq (
   "com.github.cb372" %% "scalacache-memcached",

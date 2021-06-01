@@ -1,5 +1,6 @@
 package controllers
 
+import auth.{BearerTokenAuth, Security}
 import models.DeployedImageInfo
 import play.api.libs.circe.Circe
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -12,14 +13,18 @@ import models.errors.ConflictError
 import models.requests.UpdateDeploymentRequest
 import models.responses.GenericErrorResponse
 import org.slf4j.LoggerFactory
+import play.api.Configuration
 import services.kubernetes
 
 @Singleton
-class DeploymentsController @Inject() (kubernetes:kubernetes, cc:ControllerComponents) extends AbstractController(cc) with Circe {
-  private val logger = LoggerFactory.getLogger(getClass)
+class DeploymentsController @Inject() (kubernetes:kubernetes,
+                                       cc:ControllerComponents,
+                                       override val bearerTokenAuth:BearerTokenAuth,
+                                       override val config:Configuration) extends AbstractController(cc) with Circe with Security {
+  override protected val logger = LoggerFactory.getLogger(getClass)
   import models.errors.LightweightErrorEncoder._
 
-  def listDeployments = Action.async {
+  def listDeployments = IsAdminAsync { uid=> req=>
     kubernetes
       .listDeployments()
       .map(_.map(DeployedImageInfo.fromDeployment))
@@ -31,7 +36,7 @@ class DeploymentsController @Inject() (kubernetes:kubernetes, cc:ControllerCompo
       })
   }
 
-  def updateDeployment = Action.async(circe.json[UpdateDeploymentRequest]) { req=>
+  def updateDeployment = IsAdminAsync(circe.json[UpdateDeploymentRequest]) { uid=> req=>
     kubernetes
       .updateDeployedSoftware(req.body.to, req.body.deploymentName)
       .map({

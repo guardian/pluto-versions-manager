@@ -1,5 +1,6 @@
 package controllers
 
+import auth.{BearerTokenAuth, Security}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -8,8 +9,10 @@ import java.util.Properties
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class IndexController @Inject() (config:Configuration, cc:ControllerComponents) extends AbstractController(cc) {
-  private val logger = LoggerFactory.getLogger(getClass)
+class IndexController @Inject() (cc:ControllerComponents,
+                                override val bearerTokenAuth:BearerTokenAuth,
+                                override val config:Configuration) extends AbstractController(cc) with Security {
+  override protected val logger = LoggerFactory.getLogger(getClass)
 
   /**
    * Action to provide base html and frontend code to the client
