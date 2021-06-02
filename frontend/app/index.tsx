@@ -10,9 +10,24 @@ import {
 import { AppSwitcher, Header } from "pluto-headers";
 import MainPage from "./mainpage";
 import SystemNotification from "./system_notification";
+import axios from "axios";
 
 interface RootProps {}
 interface RootState {}
+
+axios.interceptors.request.use((config) => {
+  const token = window.localStorage.getItem("pluto:access-token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  console.log(`interceptor: token is ${token}, url is ${config.url}`);
+
+  // this is set in the index.scala.html template file and gives us the value of deployment-root from the server config
+  // Only apply deployment root when url begins with /api
+  if (config.url && config.url.startsWith("/api")) {
+    config.baseURL = deploymentRootPath;
+  }
+
+  return config;
+});
 
 class App extends React.Component<RootProps, RootState> {
   theme: Theme;
