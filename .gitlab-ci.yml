@@ -73,6 +73,8 @@ deploy:
     - ls -lh /certs/*
     - mkdir ~/.docker && cp -a /certs/client/*.pem ~/.docker
     - docker version
+    - echo "build-sha=${CI_COMMIT_SHA}" > conf/version.properties
+    - echo "build-numer=${CI_PIPELINE_IID}" >> conf/version.properties
     - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
     - JAVA_OPTS="-Dbuild.number=${CI_PIPELINE_IID} -Ddocker.username=guardianmultimedia" sbt docker:publish
     - "echo ci_commit_branch: ${CI_COMMIT_BRANCH} >> build-info.yaml"
