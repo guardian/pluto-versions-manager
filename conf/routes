@@ -6,6 +6,7 @@
 GET     /                           @controllers.IndexController.index(path="/")
 GET     /api/known_projects         @controllers.ProjectsController.knownProjects
 GET     /api/project/:project_id/jobs @controllers.ProjectsController.jobsForProject(project_id:Long)
+GET     /api/project/:project_id/branches @controllers.ProjectsController.branchesForProject(project_id:Long)
 GET     /api/project/:project_id/:branch_name/:job_name/artifacts @controllers.ProjectsController.checkArtifacts(project_id:Long, branch_name:String, job_name:String)
 GET     /api/project/:project_id/:branch_name/:job_name/buildinfo @controllers.ProjectsController.getBuildInfo(project_id:Long, branch_name:String, job_name:String)
 

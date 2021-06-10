@@ -8,7 +8,7 @@ import akka.stream.scaladsl.{Keep, Sink}
 import akka.util.ByteString
 import io.circe.syntax._
 import io.circe.generic.auto._
-import models.gitlab.{GitlabProject, JobResponse, PipelineResponse}
+import models.gitlab.{Branch, GitlabProject, JobResponse, PipelineResponse}
 import org.slf4j.LoggerFactory
 
 import java.net.URLEncoder
@@ -132,5 +132,12 @@ class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer:
       Map(),
       None
     )
+  }
+
+  def branchesForProject(projectId:Long) = {
+    makeRequest[Seq[Branch]](HttpMethods.GET,
+      makeFullUrl(s"/$projectId/repository/branches"),
+      Map(),
+      None)
   }
 }

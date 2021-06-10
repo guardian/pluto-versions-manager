@@ -130,4 +130,21 @@ class ProjectsController @Inject() (cc:ControllerComponents,
 
   }
 
+  /**
+   * proxy a request to the GitLab API for the recent branches of the project
+   * @param projectId project ID to query
+   */
+  def branchesForProject(projectId:Long) = IsAdminAsync { uid=> req=>
+    api.branchesForProject(projectId).map({
+      case Right(branches)=>
+        Ok(branches.asJson)
+      case Left(err)=>
+        logger.error(s"could not retrieve branches for project id $projectId: ${err.toString}")
+        InternalServerError(GenericErrorResponse("error",s"gitlab api problem: ${err.toString}").asJson)
+    }).recover({
+      case err:Throwable=>
+        logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
+        InternalServerError(GenericErrorResponse("internal_error","An unexpected exception was thrown, see server logs for details").asJson)
+    })
+  }
 }
