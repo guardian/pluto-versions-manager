@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { RouteComponentProps } from "react-router";
-import { Chip, Grid, makeStyles, Typography } from "@material-ui/core";
+import { RouteComponentProps, useHistory } from "react-router";
+import { Button, Chip, Grid, makeStyles, Typography } from "@material-ui/core";
 import axios from "axios";
 import SystemNotification, {
   SystemNotifcationKind,
@@ -8,6 +8,7 @@ import SystemNotification, {
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
 import BuildsInfoCell from "./buildsinfocell";
+import { ChevronLeft } from "@material-ui/icons";
 
 interface BranchesRouteParams {
   deployment_name: string;
@@ -18,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     /*borderWidth: "2px",
     borderColor: theme.palette.text.secondary,
     borderRadius: "10px",*/
-    marginBottom: "2em"
+    marginBottom: "2em",
   },
   deploymentLabel: {
     marginRight: "1em",
@@ -38,8 +39,8 @@ const useStyles = makeStyles((theme) => ({
     marginRight: "auto",
     textAlign: "center",
     marginTop: "8em",
-    fontStyle: "italic"
-  }
+    fontStyle: "italic",
+  },
 }));
 
 const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
@@ -55,6 +56,7 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
   const [loading, setLoading] = useState(false);
 
   const classes = useStyles();
+  const history = useHistory();
 
   const refreshBranches = async () => {
     if (currentDeployment) {
@@ -77,7 +79,7 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
           `/api/project/${project_id}/branches`
         );
         setTotalBranchesCount(response.data.length);
-        if(response.data.length < displayBranchesLimit) {
+        if (response.data.length < displayBranchesLimit) {
           setKnownBranches(response.data);
         } else {
           setKnownBranches(response.data.slice(0, displayBranchesLimit));
@@ -130,8 +132,18 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
         container
         className={classes.banner}
         direction="row"
-        justify="space-around"
+        spacing={2}
+        justify="center"
       >
+        <Grid item style={{ alignSelf: "flex-end" }}>
+          <Button
+            variant="outlined"
+            startIcon={<ChevronLeft />}
+            onClick={() => history.goBack()}
+          >
+            Back
+          </Button>
+        </Grid>
         <Grid item>
           <Typography variant="h4">
             {currentDeployment?.deploymentName ?? ""}
@@ -181,12 +193,14 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
             ))
           : undefined}
       </Grid>
-      {
-        totalBranchesCount > displayBranchesLimit ?
-            <div className={classes.endOfList}>
-              <Typography>There are {totalBranchesCount-displayBranchesLimit} more branches not shown here</Typography>
-            </div> : undefined
-      }
+      {totalBranchesCount > displayBranchesLimit ? (
+        <div className={classes.endOfList}>
+          <Typography>
+            There are {totalBranchesCount - displayBranchesLimit} more branches
+            not shown here
+          </Typography>
+        </div>
+      ) : undefined}
     </>
   );
 };

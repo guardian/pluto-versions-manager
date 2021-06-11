@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { RouteComponentProps } from "react-router";
 import axios from "axios";
-import { Button, Chip, Grid, makeStyles, Typography } from "@material-ui/core";
-import { Link } from "react-router-dom";
+import {
+  Button,
+  Chip,
+  Grid,
+  makeStyles,
+  Link,
+  Typography,
+} from "@material-ui/core";
 import BuildsInfoCell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
 import SystemNotification, {
   SystemNotifcationKind,
 } from "./system_notification";
-import { Cached } from "@material-ui/icons";
+import { Cached, ChevronRight } from "@material-ui/icons";
+import { Link as RouterLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   infoGrid: {
@@ -177,9 +184,20 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
                 deploymentInfo={info}
                 onUpdateInitiated={onUpdateInitiated}
               />
-              <Link to={`/${info.deploymentName}/branches`}>
-                Other branches &gt;
-              </Link>
+              <Button
+                component={RouterLink}
+                to={`/${info.deploymentName}/branches`}
+                variant="outlined"
+                endIcon={<ChevronRight />}
+                style={{
+                  display: "flex",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  marginTop: "1em",
+                }}
+              >
+                Other branches
+              </Button>
             </Grid>
           </Grid>
         ))}
