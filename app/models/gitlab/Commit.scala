@@ -13,5 +13,5 @@ case class Commit(
                  short_id: String,
                  title: Option[String],
                  message: Option[String],
-                 parent_ids: Seq[String]
+                 parent_ids: Option[Seq[String]]
                  )

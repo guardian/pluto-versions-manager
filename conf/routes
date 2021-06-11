@@ -12,6 +12,7 @@ GET     /api/project/:project_id/:branch_name/:job_name/buildinfo @controllers.P
 
 GET     /api/project/:project_id/deployment @controllers.DeploymentsController.getDeploymentForProjectId(project_id:Long)
 GET     /api/known_deployments      @controllers.DeploymentsController.listDeployments
+GET     /api/deployment/:deployment_name @controllers.DeploymentsController.getDeploymentForName(deployment_name:String)
 POST    /api/deployment/update      @controllers.DeploymentsController.updateDeployment
 
 # Map static resources from the /public folder to the /assets URL path

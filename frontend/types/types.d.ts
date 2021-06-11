@@ -38,24 +38,6 @@ interface ConflictError {
     expected: string;
 }
 
-/*
-case class Commit(
-                 author_email: String,
-                 author_name: Option[String],
-                 authored_date: Option[ZonedDateTime],
-                 committed_date: Option[ZonedDateTime],
-                 committer_email: Option[String],
-                 committer_name: Option[String],
-                 id: String,
-                 short_id: String,
-                 title: Option[String],
-                 message: Option[String],
-                 parent_ids: Seq[String]
-                 )
-
-
- */
-
 interface GitlabCommit {
     author_email?: string;
     author_name?: string;
@@ -67,7 +49,7 @@ interface GitlabCommit {
     short_id: string;
     title?: string;
     message?: string;
-    parent_ids: string[];
+    parent_ids?: string[];
 }
 
 interface GitlabBranch {
@@ -79,5 +61,5 @@ interface GitlabBranch {
     developers_can_merge?: boolean;
     can_push?: boolean;
     web_url?: string;
-    commit: GitlabCommit[];
+    commit: GitlabCommit;
 }

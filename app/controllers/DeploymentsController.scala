@@ -49,6 +49,17 @@ class DeploymentsController @Inject() (kubernetes:kubernetes,
       })
   }
 
+  def getDeploymentForName(deploymentName:String) = IsAdminAsync { uid=> req=>
+    kubernetes
+      .getDeploymentInfo(deploymentName)
+      .map(info=>Ok(info.asJson))
+      .recover({
+        case err:Throwable=>
+          logger.error(s"Could not get deployment for name: ${err.getMessage}", err)
+          InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
+      })
+  }
+
   def updateDeployment = IsAdminAsync(circe.json[UpdateDeploymentRequest]) { uid=> req=>
     kubernetes
       .updateDeployedSoftware(req.body.to, req.body.deploymentName)

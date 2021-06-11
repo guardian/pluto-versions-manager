@@ -8,7 +8,11 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import {getLatestBuild, getLatestMasterBuild, requestUpdate} from "./getbuilds";
+import {
+  getLatestBuild,
+  getLatestMasterBuild,
+  requestUpdate,
+} from "./getbuilds";
 import DockerImageName from "./dockerimagename";
 import NeedsUpdate, { Updates } from "./needsupdate";
 import clsx from "clsx";
@@ -102,7 +106,9 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
 
   return (
     <>
-      <Typography className={parentClasses.cellTitle}>Available</Typography>
+      <Typography className={parentClasses.cellTitle}>
+        {props.branchName ? `Branch ${props.branchName}` : "Available"}
+      </Typography>
       {loading ? <LinearProgress variant="indeterminate" /> : null}
       {failureMessage ? (
         <Typography>
@@ -118,9 +124,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
             available={masterBuild}
             updateRequested={updateRequested}
           />
-          <Typography className={classes.inline}>
-            Latest mainline version is
-          </Typography>
+          <Typography className={classes.inline}>Latest version is</Typography>
           <DockerImageName image={masterBuild.built_image} />
           <Typography className={classes.inline}>
             built at {masterBuild.ci_commit_timestamp}

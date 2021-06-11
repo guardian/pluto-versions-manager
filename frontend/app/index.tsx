@@ -60,7 +60,10 @@ class App extends React.Component<RootProps, RootState> {
         <AppSwitcher />
         <SystemNotification />
         <Switch>
-          <Route path="/:project_id/branches" component={BranchesComponent}/>
+          <Route
+            path="/:deployment_name/branches"
+            component={BranchesComponent}
+          />
           <Route exact path="/" component={MainPage} />
         </Switch>
       </ThemeProvider>

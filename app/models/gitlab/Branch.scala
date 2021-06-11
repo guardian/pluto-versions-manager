@@ -9,5 +9,5 @@ case class Branch(
                  developers_can_merge: Option[Boolean],
                  can_push: Option[Boolean],
                  web_url: Option[String],
-                 commit:Seq[Commit]
+                 commit:Commit
                  )

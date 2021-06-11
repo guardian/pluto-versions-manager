@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { RouteComponentProps } from "react-router";
 import axios from "axios";
 import { Button, Chip, Grid, makeStyles, Typography } from "@material-ui/core";
+import { Link } from "react-router-dom";
 import BuildsInfoCell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
@@ -176,6 +177,9 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
                 deploymentInfo={info}
                 onUpdateInitiated={onUpdateInitiated}
               />
+              <Link to={`/${info.deploymentName}/branches`}>
+                Other branches &gt;
+              </Link>
             </Grid>
           </Grid>
         ))}
