@@ -37,3 +37,47 @@ interface ConflictError {
     deployed: string[];
     expected: string;
 }
+
+/*
+case class Commit(
+                 author_email: String,
+                 author_name: Option[String],
+                 authored_date: Option[ZonedDateTime],
+                 committed_date: Option[ZonedDateTime],
+                 committer_email: Option[String],
+                 committer_name: Option[String],
+                 id: String,
+                 short_id: String,
+                 title: Option[String],
+                 message: Option[String],
+                 parent_ids: Seq[String]
+                 )
+
+
+ */
+
+interface GitlabCommit {
+    author_email?: string;
+    author_name?: string;
+    authored_date?: string;
+    committed_date?: string;
+    committer_email?: string;
+    committer_name?: string;
+    id: string;
+    short_id: string;
+    title?: string;
+    message?: string;
+    parent_ids: string[];
+}
+
+interface GitlabBranch {
+    name: string;
+    merged: boolean;
+    protected: boolean;
+    default: boolean;
+    developers_can_push?: boolean;
+    developers_can_merge?: boolean;
+    can_push?: boolean;
+    web_url?: string;
+    commit: GitlabCommit[];
+}

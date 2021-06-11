@@ -8,7 +8,7 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import { getLatestMasterBuild, requestUpdate } from "./getbuilds";
+import {getLatestBuild, getLatestMasterBuild, requestUpdate} from "./getbuilds";
 import DockerImageName from "./dockerimagename";
 import NeedsUpdate, { Updates } from "./needsupdate";
 import clsx from "clsx";
@@ -19,6 +19,7 @@ import { Error } from "@material-ui/icons";
 
 interface BuildsInfoCellProps {
   deploymentInfo: DeployedImageInfo;
+  branchName?: string;
   onUpdateInitiated?: () => void;
 }
 
@@ -48,7 +49,7 @@ const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
   const classes = localStyles();
 
   useEffect(() => {
-    getLatestMasterBuild(props.deploymentInfo)
+    getLatestBuild(props.deploymentInfo, props.branchName ?? "master")
       .then((info) => {
         if (info) {
           setMasterBuild(info);

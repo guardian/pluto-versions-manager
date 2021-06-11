@@ -110,7 +110,6 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
 
   return (
     <>
-      <SystemNotification />
       <Grid
         container
         justify="space-between"

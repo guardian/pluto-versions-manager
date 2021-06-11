@@ -10,6 +10,7 @@ GET     /api/project/:project_id/branches @controllers.ProjectsController.branch
 GET     /api/project/:project_id/:branch_name/:job_name/artifacts @controllers.ProjectsController.checkArtifacts(project_id:Long, branch_name:String, job_name:String)
 GET     /api/project/:project_id/:branch_name/:job_name/buildinfo @controllers.ProjectsController.getBuildInfo(project_id:Long, branch_name:String, job_name:String)
 
+GET     /api/project/:project_id/deployment @controllers.DeploymentsController.getDeploymentForProjectId(project_id:Long)
 GET     /api/known_deployments      @controllers.DeploymentsController.listDeployments
 POST    /api/deployment/update      @controllers.DeploymentsController.updateDeployment
 

@@ -47,6 +47,10 @@ function getGHPublishingJob(
 }
 
 async function getLatestMasterBuild(deploymentInfo: DeployedImageInfo) {
+  return getLatestBuild(deploymentInfo, "master");
+}
+
+async function getLatestBuild(deploymentInfo: DeployedImageInfo, branchName:string) {
   const maybeProjectId = getGHProjectId(deploymentInfo);
   if (!maybeProjectId) {
     console.log(
@@ -63,7 +67,7 @@ async function getLatestMasterBuild(deploymentInfo: DeployedImageInfo) {
     return;
   }
 
-  return getLatestBuildInternal(maybeProjectId, jobName, "master");
+  return getLatestBuildInternal(maybeProjectId, jobName, branchName);
 }
 
 const CompareVersionResult = {
@@ -174,6 +178,7 @@ async function requestUpdate(to: DockerImage, deploymentName: string) {
 }
 export {
   getLatestMasterBuild,
+    getLatestBuild,
   compareVersionResults,
   CompareVersionResult,
   requestUpdate,

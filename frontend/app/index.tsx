@@ -11,6 +11,7 @@ import { AppSwitcher, Header } from "pluto-headers";
 import MainPage from "./mainpage";
 import SystemNotification from "./system_notification";
 import axios from "axios";
+import BranchesComponent from "./BranchesComponent";
 
 interface RootProps {}
 interface RootState {}
@@ -57,7 +58,9 @@ class App extends React.Component<RootProps, RootState> {
         <CssBaseline />
         <Header />
         <AppSwitcher />
+        <SystemNotification />
         <Switch>
+          <Route path="/:project_id/branches" component={BranchesComponent}/>
           <Route exact path="/" component={MainPage} />
         </Switch>
       </ThemeProvider>
