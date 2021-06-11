@@ -34,4 +34,5 @@ case class MergeRequest(
                        downvotes: Int,
                        author: Option[Author],
                        sha: String,
+                       web_url: Option[String]
                        )

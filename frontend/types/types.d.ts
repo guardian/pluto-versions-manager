@@ -63,3 +63,35 @@ interface GitlabBranch {
     web_url?: string;
     commit: GitlabCommit;
 }
+
+interface GitlabAuthor {
+    id: number;
+    name?: string;
+    username: string;
+    state: string;
+    avatar_url?: string;
+    web_url?: string;
+}
+
+interface GitlabMergeRequest {
+    id: number;
+    iid: number;
+    project_id: number;
+    title: string;
+    description?: string;
+    state: string;
+    created_at: string;
+    updated_at: string;
+    merged_by?: string;
+    merged_at?: string;
+    closed_by?: string;
+    closed_at?: string;
+    target_branch: string;
+    source_branch: string;
+    user_notes_count: number;
+    upvotes: number;
+    downvotes: number;
+    author?: GitlabAuthor;
+    sha: string;
+    web_url?: string;
+}

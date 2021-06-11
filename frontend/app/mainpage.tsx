@@ -9,7 +9,7 @@ import {
   Link,
   Typography,
 } from "@material-ui/core";
-import BuildsInfoCell from "./buildsinfocell";
+import Generalinfocell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
 import SystemNotification, {
@@ -180,7 +180,7 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
               </ul>
             </Grid>
             <Grid item className={classes.buildsInfoCell}>
-              <BuildsInfoCell
+              <Generalinfocell
                 deploymentInfo={info}
                 onUpdateInitiated={onUpdateInitiated}
               />

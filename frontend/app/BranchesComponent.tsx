@@ -7,8 +7,10 @@ import SystemNotification, {
 } from "./system_notification";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
-import BuildsInfoCell from "./buildsinfocell";
+import Generalinfocell from "./buildsinfocell";
 import { ChevronLeft } from "@material-ui/icons";
+import MergeRequestInfoCell from "./MergeRequestInfoCell";
+import BuildsInfoCell from "./buildsinfocell";
 
 interface BranchesRouteParams {
   deployment_name: string;
@@ -47,7 +49,13 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
   props
 ) => {
   const [knownBranches, setKnownBranches] = useState<GitlabBranch[]>([]);
+  const [knownMergeRequests, setKnownMergeRequests] = useState<
+    GitlabMergeRequest[]
+  >([]);
+
   const [totalBranchesCount, setTotalBranchesCount] = useState(0);
+  const [totalMRCount, setTotalMRCount] = useState(0);
+
   const [displayBranchesLimit, setDisplayBranchesLimit] = useState(8);
 
   const [currentDeployment, setCurrentDeployment] =
@@ -58,22 +66,15 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
   const classes = useStyles();
   const history = useHistory();
 
-  const refreshBranches = async () => {
-    if (currentDeployment) {
+  const refreshBranches = async (project_id: number) => {
+    if (!project_id) {
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        "This deployment has no project id registered, can't get branches"
+      );
+      return;
+    } else {
       setLoading(true);
-      const project_id = currentDeployment.labels.hasOwnProperty(
-        "gitlab-project-id"
-      )
-        ? currentDeployment.labels["gitlab-project-id"]
-        : undefined;
-      if (!project_id) {
-        SystemNotification.open(
-          SystemNotifcationKind.Error,
-          "This deployment has no project id registered, can't get branches"
-        );
-        setLoading(false);
-        return;
-      }
       try {
         const response = await axios.get<GitlabBranch[]>(
           `/api/project/${project_id}/branches`
@@ -96,9 +97,52 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
     }
   };
 
+  const refreshMergeRequests = async (project_id: number) => {
+    if (!project_id) {
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        "This deployment has no project id registered, can't get merge requests"
+      );
+      return;
+    } else {
+      setLoading(true);
+      try {
+        const response = await axios.get<GitlabMergeRequest[]>(
+          `/api/project/${project_id}/mergerequests`
+        );
+        setTotalMRCount(response.data.length);
+        if (response.data.length < displayBranchesLimit) {
+          setKnownMergeRequests(response.data);
+        } else {
+          setKnownMergeRequests(response.data.slice(0, displayBranchesLimit));
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        SystemNotification.open(
+          SystemNotifcationKind.Error,
+          "Could not load branch information"
+        );
+        setLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
     if (currentDeployment) {
-      refreshBranches();
+      try {
+        const project_id = parseInt(
+          currentDeployment.labels["gitlab-project-id"]
+        );
+        refreshBranches(project_id);
+        refreshMergeRequests(project_id);
+      } catch (err) {
+        console.error("Could not get project id: ", err);
+        SystemNotification.open(
+          SystemNotifcationKind.Error,
+          "Could not find project id for this component"
+        );
+      }
     }
   }, [currentDeployment]);
 
@@ -110,7 +154,6 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
         `/api/deployment/${name}`
       );
       setLoading(false);
-
       setCurrentDeployment(response.data);
     } catch (err) {
       console.error(err);
@@ -181,6 +224,20 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
           </ul>
         </Grid>
       </Grid>
+      {/* merge request information */}
+      <Grid container justify="center" spacing={3}>
+        {currentDeployment
+          ? knownMergeRequests.map((mr, idx) => (
+              <Grid item className={classes.branchInfo} key={idx} xs={3}>
+                <MergeRequestInfoCell
+                  deploymentInfo={currentDeployment}
+                  mr={mr}
+                />
+              </Grid>
+            ))
+          : undefined}
+      </Grid>
+      {/* branches information */}
       <Grid container justify="center" spacing={3}>
         {currentDeployment
           ? knownBranches.map((branch, idx) => (
