@@ -21,6 +21,7 @@ import scalacache.memcached._
 import scalacache.serialization.circe._
 import scalacache.modes.scalaFuture._
 
+import java.time.ZonedDateTime
 import scala.concurrent.duration.Duration
 
 @Singleton
@@ -137,7 +138,7 @@ class ProjectsController @Inject() (cc:ControllerComponents,
   def branchesForProject(projectId:Long) = IsAdminAsync { uid=> req=>
     api.branchesForProject(projectId).map({
       case Right(branches)=>
-        Ok(branches.asJson)
+        Ok(branches.sortBy(_.commit.committed_date).asJson)
       case Left(err)=>
         logger.error(s"could not retrieve branches for project id $projectId: ${err.toString}")
         InternalServerError(GenericErrorResponse("error",s"gitlab api problem: ${err.toString}").asJson)
