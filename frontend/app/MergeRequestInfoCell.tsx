@@ -7,9 +7,10 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import { Launch } from "@material-ui/icons";
+import { Build, Launch } from "@material-ui/icons";
 import { getLatestBuild } from "./getbuilds";
 import GeneralInfoCell from "./generalinfocell";
+import BuildsInfoCell from "./buildsinfocell";
 
 interface MergeRequestInfoCellProps {
   deploymentInfo: DeployedImageInfo;
@@ -42,6 +43,7 @@ const MergeRequestInfoCell: React.FC<MergeRequestInfoCellProps> = (props) => {
     <GeneralInfoCell
       deploymentInfo={props.deploymentInfo}
       gitRef={`refs/merge-requests/${props.mr.iid}/head`}
+      hideOn404={true}
     >
       <Typography className={parentClasses.cellTitle}>
         Pending merge request {props.mr.title}
@@ -59,6 +61,11 @@ const MergeRequestInfoCell: React.FC<MergeRequestInfoCellProps> = (props) => {
       <Typography className={localClasses.secondary}>
         Created at {props.mr.created_at}
       </Typography>
+      <BuildsInfoCell
+        deploymentInfo={props.deploymentInfo}
+        branchName={props.mr.source_branch}
+        hideOn404={true}
+      />
     </GeneralInfoCell>
   );
 };

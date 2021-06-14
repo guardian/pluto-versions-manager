@@ -25,6 +25,7 @@ interface GeneralInfoCellProps {
   deploymentInfo: DeployedImageInfo;
   gitRef?: string;
   onUpdateInitiated?: () => void;
+  hideOn404?: boolean;
 }
 
 const localStyles = makeStyles((theme) => ({
@@ -64,7 +65,11 @@ const GeneralInfoCell: React.FC<GeneralInfoCellProps> = (props) => {
       .catch((err) => {
         setLoading(false);
         console.error("Could not get master build info");
-        setFailureMessage(err.toString());
+        if (err.toString().includes("404") && !props.hideOn404) {
+          setFailureMessage(err.toString()); //don't set failure message if we are told to hide on 404
+        } else {
+          setFailureMessage(err.toString());
+        }
       });
   }, [props.deploymentInfo]);
 

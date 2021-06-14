@@ -79,11 +79,19 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
         const response = await axios.get<GitlabBranch[]>(
           `/api/project/${project_id}/branches`
         );
-        setTotalBranchesCount(response.data.length);
-        if (response.data.length < displayBranchesLimit) {
-          setKnownBranches(response.data);
+        const branchesInMergeRequests = knownMergeRequests.map(
+          (mr) => mr.source_branch
+        );
+
+        const nonDuplicateBranches = response.data.filter(
+          (b) => !branchesInMergeRequests.includes(b.name)
+        );
+
+        setTotalBranchesCount(nonDuplicateBranches.length);
+        if (nonDuplicateBranches.length < displayBranchesLimit) {
+          setKnownBranches(nonDuplicateBranches);
         } else {
-          setKnownBranches(response.data.slice(0, displayBranchesLimit));
+          setKnownBranches(nonDuplicateBranches.slice(0, displayBranchesLimit));
         }
         setLoading(false);
       } catch (err) {
@@ -134,7 +142,6 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
         const project_id = parseInt(
           currentDeployment.labels["gitlab-project-id"]
         );
-        refreshBranches(project_id);
         refreshMergeRequests(project_id);
       } catch (err) {
         console.error("Could not get project id: ", err);
@@ -145,6 +152,23 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
       }
     }
   }, [currentDeployment]);
+
+  useEffect(() => {
+    if (currentDeployment) {
+      try {
+        const project_id = parseInt(
+          currentDeployment.labels["gitlab-project-id"]
+        );
+        refreshBranches(project_id);
+      } catch (err) {
+        console.error("Could not get project id: ", err);
+        SystemNotification.open(
+          SystemNotifcationKind.Error,
+          "Could not find project id for this component"
+        );
+      }
+    }
+  }, [knownMergeRequests]);
 
   const refreshCurrentDeployment = async () => {
     setLoading(true);

@@ -7,17 +7,14 @@ interface BuildsInfoCellProps {
   deploymentInfo: DeployedImageInfo;
   branchName?: string;
   onUpdateInitiated?: () => void;
+  hideOn404?: boolean;
 }
 
 const BuildsInfoCell: React.FC<BuildsInfoCellProps> = (props) => {
   const parentClasses = useStyles();
 
   return (
-    <GeneralInfoCell
-      deploymentInfo={props.deploymentInfo}
-      gitRef={props.branchName}
-      onUpdateInitiated={props.onUpdateInitiated}
-    >
+    <GeneralInfoCell gitRef={props.branchName} {...props}>
       <Typography className={parentClasses.cellTitle}>
         {props.branchName ? `Branch ${props.branchName}` : "Available"}
       </Typography>
