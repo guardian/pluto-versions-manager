@@ -151,7 +151,7 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
         );
       }
     }
-  }, [currentDeployment]);
+  }, [currentDeployment, displayBranchesLimit]);
 
   useEffect(() => {
     if (currentDeployment) {
