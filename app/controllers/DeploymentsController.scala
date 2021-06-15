@@ -36,6 +36,30 @@ class DeploymentsController @Inject() (kubernetes:kubernetes,
       })
   }
 
+  def getDeploymentForProjectId(projectId:Long) = IsAdminAsync { uid=> req=>
+    kubernetes
+      .listDeployments()
+      .map(_.map(DeployedImageInfo.fromDeployment))
+      .map(_.filter(_.labels.get("gitlab-project-id").contains(projectId.toString)))
+      .map(results=>Ok(results.asJson))
+      .recover({
+        case err:Throwable=>
+          logger.error(s"Could not get deployments for filtering: ${err.getMessage}", err)
+          InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
+      })
+  }
+
+  def getDeploymentForName(deploymentName:String) = IsAdminAsync { uid=> req=>
+    kubernetes
+      .getDeploymentInfo(deploymentName)
+      .map(info=>Ok(info.asJson))
+      .recover({
+        case err:Throwable=>
+          logger.error(s"Could not get deployment for name: ${err.getMessage}", err)
+          InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
+      })
+  }
+
   def updateDeployment = IsAdminAsync(circe.json[UpdateDeploymentRequest]) { uid=> req=>
     kubernetes
       .updateDeployedSoftware(req.body.to, req.body.deploymentName)

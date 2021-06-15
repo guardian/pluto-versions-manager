@@ -8,7 +8,10 @@ async function getLatestBuildInternal(
   buildJob: string,
   branchName: string
 ): Promise<BuildInfo> {
-  const url = `/api/project/${projectId}/${branchName}/${buildJob}/buildinfo`;
+  //the branch name may contain a /; in this case it must be _double_ encoded or the / is considered part of the html path
+  const url = `/api/project/${projectId}/${encodeURIComponent(
+    encodeURIComponent(branchName)
+  )}/${buildJob}/buildinfo`;
   const response = await axios.get<BuildInfo>(url, {
     validateStatus: () => true,
   });
@@ -47,6 +50,13 @@ function getGHPublishingJob(
 }
 
 async function getLatestMasterBuild(deploymentInfo: DeployedImageInfo) {
+  return getLatestBuild(deploymentInfo, "master");
+}
+
+async function getLatestBuild(
+  deploymentInfo: DeployedImageInfo,
+  branchName: string
+) {
   const maybeProjectId = getGHProjectId(deploymentInfo);
   if (!maybeProjectId) {
     console.log(
@@ -63,7 +73,7 @@ async function getLatestMasterBuild(deploymentInfo: DeployedImageInfo) {
     return;
   }
 
-  return getLatestBuildInternal(maybeProjectId, jobName, "master");
+  return getLatestBuildInternal(maybeProjectId, jobName, branchName);
 }
 
 const CompareVersionResult = {
@@ -174,6 +184,7 @@ async function requestUpdate(to: DockerImage, deploymentName: string) {
 }
 export {
   getLatestMasterBuild,
+  getLatestBuild,
   compareVersionResults,
   CompareVersionResult,
   requestUpdate,

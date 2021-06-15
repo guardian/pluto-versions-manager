@@ -23,8 +23,9 @@
   <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
 
+  <logger name="services.GitlabAPI" level="DEBUG"/>
   <logger name="services" level="INFO"/>
-
+  <logger name="controllers.ProjectsController" level="DEBUG"/>
   <root level="WARN">
     <appender-ref ref="ASYNCSTDOUT" />
   </root>

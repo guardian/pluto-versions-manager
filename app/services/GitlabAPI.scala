@@ -8,7 +8,8 @@ import akka.stream.scaladsl.{Keep, Sink}
 import akka.util.ByteString
 import io.circe.syntax._
 import io.circe.generic.auto._
-import models.gitlab.{GitlabProject, JobResponse, PipelineResponse}
+import models.gitlab.MergeRequestState.MergeRequestState
+import models.gitlab.{Branch, GitlabProject, JobResponse, MergeRequest, PipelineResponse}
 import org.slf4j.LoggerFactory
 
 import java.net.URLEncoder
@@ -132,5 +133,27 @@ class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer:
       Map(),
       None
     )
+  }
+
+  def branchesForProject(projectId:Long) = {
+    makeRequest[Seq[Branch]](HttpMethods.GET,
+      makeFullUrl(s"/$projectId/repository/branches"),
+      Map(),
+      None)
+  }
+
+  def getOpenMergeRequests(projectId:Long, forStatus:Option[MergeRequestState]) = {
+    import models.gitlab.MergeRequestCodec._
+
+    val baseUrl = s"/$projectId/merge_requests"
+    val finalUrl = forStatus match {
+      case Some(status)=>baseUrl + s"?state=${encodeParam(status.toString)}"
+      case None=>baseUrl
+    }
+
+    makeRequest[Seq[MergeRequest]](HttpMethods.GET,
+      makeFullUrl(finalUrl),
+      Map(),
+      None)
   }
 }

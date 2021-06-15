@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import io.circe.syntax._
 import io.circe.generic.auto._
 import models.BuildInfo
+import models.gitlab.MergeRequestState
 import models.responses.GenericErrorResponse
 import org.slf4j.LoggerFactory
 import play.api.libs.circe.Circe
@@ -21,7 +22,11 @@ import scalacache.memcached._
 import scalacache.serialization.circe._
 import scalacache.modes.scalaFuture._
 
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import java.time.ZonedDateTime
 import scala.concurrent.duration.Duration
+import scala.util.Try
 
 @Singleton
 class ProjectsController @Inject() (cc:ControllerComponents,
@@ -122,12 +127,48 @@ class ProjectsController @Inject() (cc:ControllerComponents,
    *         not be parsed; Right if there was parsable BuildInfo.
    */
   def findNewBuildInfo(projectId:Long, branchName:String, jobName:String) = {
+    logger.debug(s"branchName is ${branchName}")
+    logger.debug(s"jobName is $jobName")
     for {
-      zipContent <- api.artifactsZipForBranch(projectId, branchName, jobName)
+      gitRef <- Future.fromTry(Try { URLDecoder.decode(branchName, StandardCharsets.UTF_8) })
+      zipContent <- api.artifactsZipForBranch(projectId, gitRef, jobName)
       zipReader <- Future(new ZipReader(zipContent.toArray))
       maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo())
     } yield maybeBuildInfo
 
   }
 
+  /**
+   * proxy a request to the GitLab API for the recent branches of the project
+   * @param projectId project ID to query
+   */
+  def branchesForProject(projectId:Long) = IsAdminAsync { uid=> req=>
+    api.branchesForProject(projectId).map({
+      case Right(branches)=>
+        Ok(branches.sortBy(_.commit.committed_date).asJson)
+      case Left(err)=>
+        logger.error(s"could not retrieve branches for project id $projectId: ${err.toString}")
+        InternalServerError(GenericErrorResponse("error",s"gitlab api problem: ${err.toString}").asJson)
+    }).recover({
+      case err:Throwable=>
+        logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
+        InternalServerError(GenericErrorResponse("internal_error","An unexpected exception was thrown, see server logs for details").asJson)
+    })
+  }
+
+  def mrForProject(projectId:Long) = IsAdminAsync { uid=> req=>
+    import models.gitlab.MergeRequestCodec._
+
+    api.getOpenMergeRequests(projectId,Some(MergeRequestState.opened)).map({
+      case Right(mrs)=>
+        Ok(mrs.sortBy(_.created_at).asJson)
+      case Left(err)=>
+        logger.error(s"Could not retrieve merge requests for project id $projectId: ${err.toString}")
+        InternalServerError(GenericErrorResponse("error",s"gitlab api problem: ${err.toString}").asJson)
+    }).recover({
+      case err:Throwable=>
+        logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
+        InternalServerError(GenericErrorResponse("internal_error","An unexpected exception was thrown, see server logs for details").asJson)
+    })
+  }
 }

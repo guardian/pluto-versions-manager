@@ -17,8 +17,10 @@ const DockerImageName: React.FC<DockerImageNameProps> = (props) => {
 
   return (
     <>
-      <Typography>{props.image.imageName.replace("/", " / ")}</Typography>
-      <Typography className={classes.versionText}>
+      <Typography id="docker-image-name">
+        {props.image.imageName.replace("/", " / ")}
+      </Typography>
+      <Typography id="docker-image-version" className={classes.versionText}>
         {props.image.version}
       </Typography>
     </>
