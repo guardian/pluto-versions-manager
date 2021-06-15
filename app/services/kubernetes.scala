@@ -59,53 +59,41 @@ class kubernetes @Inject() (config:Configuration) (implicit system:ActorSystem, 
       .map(listContent=>listContent.items)
   }
 
-  def performUpdate(deployment:Deployment, to:DockerImage):Future[Either[LightweightError, Deployment]] = {
-    val maybeNewContainersList = deployment
-      .spec
-      .flatMap(_.template.spec)
-      .map(spec=>{
-        spec.containers.map(c=>{
-          if(c.image.startsWith(to.imageName)) {
-            c.copy(image = to.toString)
-          } else {
-            c
-          }
-        })
+  private def extractContainers(deployment:Deployment) =
+    for {
+      spec <- deployment.spec
+      templateSpec <- spec.template.spec
+    } yield (templateSpec.containers, templateSpec.initContainers)
+
+  private def updateContainersList(source:List[Container], to:DockerImage) =
+    source.map(c=>{
+      if(c.image.startsWith(to.imageName)) {
+        c.copy(image = to.toString)
+      } else {
+        c
+      }
     })
 
-    val maybeNewInitContainersList = deployment
-      .spec
-      .flatMap(_.template.spec)
-      .map(spec=>{
-        spec.initContainers.map(c=>{
-          if(c.image.startsWith(to.imageName)) {
-            c.copy(image = to.toString)
-          } else {
-            c
-          }
-        })
-      })
+  def performUpdate(deployment:Deployment, to:DockerImage):Future[Either[LightweightError, Deployment]] =
+    extractContainers(deployment) match {
+      case Some((containers, initContainers))=>
+        val updatedContainers = updateContainersList(containers, to)
+        val updatedInitContainers = updateContainersList(initContainers, to)
 
-    if(maybeNewContainersList==deployment.spec.flatMap(_.template.spec).map(_.containers)) {
-      logger.error(s"Can't update ${deployment.metadata.name} to $to: no matching containers to update")
-      Future(Left(ConflictError.fromDeployment(deployment, to)))
-    } else {
-      if(maybeNewContainersList.isDefined) {
-        val firstUpdateTemplateSpec = deployment.spec.flatMap(_.template.spec).map(_.copy(containers=maybeNewContainersList.get))
-        val updatedTemplateSpec = maybeNewInitContainersList match {  //also update any 'init' containers in the spec
-          case Some(newInitContainers)=>firstUpdateTemplateSpec.map(_.copy(initContainers = newInitContainers))
-          case None=>firstUpdateTemplateSpec
+        if(updatedContainers==containers) {
+          logger.error(s"Can't update ${deployment.metadata.name} to $to: no matching containers to update")
+          Future(Left(ConflictError.fromDeployment(deployment, to)))
         }
+        //if there were no updates to be made to init containers, then `updatedInitContainers`==`initContainers` so there is no change here.
+        val updatedTemplateSpec = deployment.spec.flatMap(_.template.spec).map(_.copy(containers=updatedContainers, initContainers=updatedInitContainers))
         val updatedTemplate = deployment.spec.map(_.template).map(_.copy(spec=updatedTemplateSpec))
         val updatedDeloymentSpec = deployment.spec.map(_.copy(template = updatedTemplate.get))
         val updatedDeployment = deployment.copy(spec=updatedDeloymentSpec)
         logger.debug(s"Updated deployment is $updatedDeployment")
         (k8s update[Deployment] updatedDeployment).map(Right.apply)
-      } else {
+      case None=>
         Future(Left(GenericError("Deployment is misconfigured, there was nothing to update")))
-      }
     }
-  }
 
   def updateDeployedSoftware(to:DockerImage, deploymentName:String) = {
     for {
