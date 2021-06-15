@@ -72,12 +72,30 @@ class kubernetes @Inject() (config:Configuration) (implicit system:ActorSystem, 
           }
         })
     })
+
+    val maybeNewInitContainersList = deployment
+      .spec
+      .flatMap(_.template.spec)
+      .map(spec=>{
+        spec.initContainers.map(c=>{
+          if(c.image.startsWith(to.imageName)) {
+            c.copy(image = to.toString)
+          } else {
+            c
+          }
+        })
+      })
+
     if(maybeNewContainersList==deployment.spec.flatMap(_.template.spec).map(_.containers)) {
       logger.error(s"Can't update ${deployment.metadata.name} to $to: no matching containers to update")
       Future(Left(ConflictError.fromDeployment(deployment, to)))
     } else {
       if(maybeNewContainersList.isDefined) {
-        val updatedTemplateSpec = deployment.spec.flatMap(_.template.spec).map(_.copy(containers=maybeNewContainersList.get))
+        val firstUpdateTemplateSpec = deployment.spec.flatMap(_.template.spec).map(_.copy(containers=maybeNewContainersList.get))
+        val updatedTemplateSpec = maybeNewInitContainersList match {  //also update any 'init' containers in the spec
+          case Some(newInitContainers)=>firstUpdateTemplateSpec.map(_.copy(initContainers = newInitContainers))
+          case None=>firstUpdateTemplateSpec
+        }
         val updatedTemplate = deployment.spec.map(_.template).map(_.copy(spec=updatedTemplateSpec))
         val updatedDeloymentSpec = deployment.spec.map(_.copy(template = updatedTemplate.get))
         val updatedDeployment = deployment.copy(spec=updatedDeloymentSpec)
