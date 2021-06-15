@@ -36,6 +36,9 @@
     "testResultsProcessor": "jest-junit",
     "setupFiles": [
       "./jestSetup.jsx"
+    ],
+    "setupFilesAfterEnv": [
+      "./jestConsoleCustomisation.js"
     ]
   },
   "devDependencies": {

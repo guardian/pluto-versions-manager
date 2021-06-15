@@ -8,7 +8,7 @@ import SystemNotification, {
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
 import Generalinfocell from "./buildsinfocell";
-import { ChevronLeft } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import MergeRequestInfoCell from "./MergeRequestInfoCell";
 import BuildsInfoCell from "./buildsinfocell";
 
@@ -280,6 +280,12 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
             There are {totalBranchesCount - displayBranchesLimit} more branches
             not shown here
           </Typography>
+          <Button
+            onClick={() => setDisplayBranchesLimit((prev) => prev + 8)}
+            endIcon={<ChevronRight />}
+          >
+            Show more
+          </Button>
         </div>
       ) : undefined}
     </>

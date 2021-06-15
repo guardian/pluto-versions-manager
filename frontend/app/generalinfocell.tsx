@@ -65,8 +65,10 @@ const GeneralInfoCell: React.FC<GeneralInfoCellProps> = (props) => {
       .catch((err) => {
         setLoading(false);
         console.error("Could not get master build info");
-        if (err.toString().includes("404") && !props.hideOn404) {
-          setFailureMessage(err.toString()); //don't set failure message if we are told to hide on 404
+        if (err.toString().includes("404")) {
+          if (!props.hideOn404) {
+            setFailureMessage(err.toString()); //don't set failure message if we are told to hide on 404
+          }
         } else {
           setFailureMessage(err.toString());
         }
@@ -113,7 +115,7 @@ const GeneralInfoCell: React.FC<GeneralInfoCellProps> = (props) => {
       {props.children}
       {loading ? <LinearProgress variant="indeterminate" /> : null}
       {failureMessage ? (
-        <Typography>
+        <Typography id="error-message">
           <Error />
           Could not determine available versions: {failureMessage}
         </Typography>
@@ -128,7 +130,7 @@ const GeneralInfoCell: React.FC<GeneralInfoCellProps> = (props) => {
           />
           <Typography className={classes.inline}>Latest version is</Typography>
           <DockerImageName image={masterBuild.built_image} />
-          <Typography className={classes.inline}>
+          <Typography className={classes.inline} id="build-date">
             built at {masterBuild.ci_commit_timestamp}
           </Typography>
         </>
