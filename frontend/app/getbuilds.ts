@@ -1,7 +1,8 @@
 import axios from "axios";
-import SystemNotification, {
+import {
+  SystemNotification,
   SystemNotifcationKind,
-} from "./system_notification";
+} from "pluto-headers";
 
 async function getLatestBuildInternal(
   projectId: string,
