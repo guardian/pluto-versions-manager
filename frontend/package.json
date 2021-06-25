@@ -87,7 +87,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "lodash.omit": "^4.5.0",
-    "pluto-headers": "file://Users/andy_gallagher/workdev/pluto-headers",
+    "pluto-headers": "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.4.0",
     "process": "^0.11.10",
     "prop-types": "^15.7.2",
     "query-string": "^6.13.1",
