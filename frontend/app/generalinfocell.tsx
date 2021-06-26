@@ -16,10 +16,7 @@ import {
 import DockerImageName from "./dockerimagename";
 import NeedsUpdate, { Updates } from "./needsupdate";
 import clsx from "clsx";
-import  {
-  SystemNotification,
-  SystemNotifcationKind,
-} from "pluto-headers";
+import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 import { Error } from "@material-ui/icons";
 
 interface GeneralInfoCellProps {

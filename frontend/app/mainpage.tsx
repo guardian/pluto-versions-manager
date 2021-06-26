@@ -12,10 +12,7 @@ import {
 import Generalinfocell from "./buildsinfocell";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
-import {
-  SystemNotification,
-  SystemNotifcationKind,
-} from "pluto-headers";
+import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 import { Cached, ChevronRight } from "@material-ui/icons";
 import { Link as RouterLink } from "react-router-dom";
 

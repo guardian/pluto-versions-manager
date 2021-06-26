@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router";
 import { Button, Chip, Grid, makeStyles, Typography } from "@material-ui/core";
 import axios from "axios";
-import {
-  SystemNotification,
-  SystemNotifcationKind,
-} from "pluto-headers";
+import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
