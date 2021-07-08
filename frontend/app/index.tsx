@@ -7,9 +7,8 @@ import {
   Theme,
   CssBaseline,
 } from "@material-ui/core";
-import { AppSwitcher, Header } from "pluto-headers";
+import { AppSwitcher, Header, SystemNotification } from "pluto-headers";
 import MainPage from "./mainpage";
-import SystemNotification from "./system_notification";
 import axios from "axios";
 import BranchesComponent from "./BranchesComponent";
 
@@ -58,7 +57,6 @@ class App extends React.Component<RootProps, RootState> {
         <CssBaseline />
         <Header />
         <AppSwitcher />
-        <SystemNotification />
         <Switch>
           <Route
             path="/:deployment_name/branches"
@@ -66,6 +64,7 @@ class App extends React.Component<RootProps, RootState> {
           />
           <Route exact path="/" component={MainPage} />
         </Switch>
+        <SystemNotification />
       </ThemeProvider>
     );
   }
