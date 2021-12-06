@@ -51,8 +51,11 @@ const GeneralInfoCell: React.FC<GeneralInfoCellProps> = (props) => {
   const classes = localStyles();
 
   useEffect(() => {
-    const buildInfoPromise = props.gitRef ? getLatestBuild(props.deploymentInfo, props.gitRef) : getLatestMainlineBuild(props.deploymentInfo)
-      buildInfoPromise.then((info) => {
+    const buildInfoPromise = props.gitRef
+      ? getLatestBuild(props.deploymentInfo, props.gitRef)
+      : getLatestMainlineBuild(props.deploymentInfo);
+    buildInfoPromise
+      .then((info) => {
         if (info) {
           setMasterBuild(info);
         } else {

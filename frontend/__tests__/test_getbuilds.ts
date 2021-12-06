@@ -183,9 +183,7 @@ describe("getLatestMainlineBuild", () => {
       const req = moxios.requests.mostRecent();
 
       try {
-        expect(req.url).toEqual(
-          "/api/project/12345678/main/docker/buildinfo"
-        );
+        expect(req.url).toEqual("/api/project/12345678/main/docker/buildinfo");
       } catch (e) {
         done.fail(e);
       }
@@ -239,24 +237,22 @@ describe("getLatestMainlineBuild", () => {
       const req = moxios.requests.mostRecent();
 
       try {
-        expect(req.url).toEqual(
-            "/api/project/12345678/main/docker/buildinfo"
-        );
+        expect(req.url).toEqual("/api/project/12345678/main/docker/buildinfo");
       } catch (e) {
         done.fail(e);
       }
 
       await req.respondWith({
         status: 404,
-        response: {"status": "notpresent"},
+        response: { status: "notpresent" },
       });
 
-      moxios.wait(async ()=>{
+      moxios.wait(async () => {
         const req = moxios.requests.mostRecent();
 
         try {
           expect(req.url).toEqual(
-              "/api/project/12345678/master/docker/buildinfo"
+            "/api/project/12345678/master/docker/buildinfo"
           );
         } catch (e) {
           done.fail(e);
@@ -285,9 +281,7 @@ describe("getLatestMainlineBuild", () => {
         } catch (e) {
           done.fail(e);
         }
-
-      })
-
+      });
     });
   });
 

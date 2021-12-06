@@ -51,10 +51,10 @@ async function getLatestMainlineBuild(deploymentInfo: DeployedImageInfo) {
   try {
     const mainBuild = await getLatestBuild(deploymentInfo, "main");
     return mainBuild;
-  } catch(err) {
-    if(err=="Server returned 404") {
+  } catch (err) {
+    if (err == "Server returned 404") {
       return getLatestBuild(deploymentInfo, "master");
-    } else{
+    } else {
       throw err;
     }
   }

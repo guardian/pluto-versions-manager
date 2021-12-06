@@ -104,7 +104,9 @@ describe("GeneralInfoCell", () => {
 
         moxios.wait(async () => {
           const nextReq = moxios.requests.mostRecent();
-          expect(nextReq.url).toEqual("/api/project/12345/master/upload/buildinfo");
+          expect(nextReq.url).toEqual(
+            "/api/project/12345/master/upload/buildinfo"
+          );
 
           await act(async () => {
             await nextReq.respondWith({
@@ -121,11 +123,10 @@ describe("GeneralInfoCell", () => {
           const errorNode = rendered.find("p#error-message");
           expect(errorNode.exists()).toBeTruthy();
           expect(errorNode.text()).toEqual(
-              "Could not determine available versions: Server returned 404"
+            "Could not determine available versions: Server returned 404"
           );
           done();
-        })
-
+        });
       } catch (err) {
         done.fail(err);
       }
