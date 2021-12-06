@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import {
   getLatestBuild,
-  getLatestMasterBuild,
+  getLatestMainlineBuild,
   requestUpdate,
 } from "./getbuilds";
 import DockerImageName from "./dockerimagename";
@@ -51,8 +51,8 @@ const GeneralInfoCell: React.FC<GeneralInfoCellProps> = (props) => {
   const classes = localStyles();
 
   useEffect(() => {
-    getLatestBuild(props.deploymentInfo, props.gitRef ?? "master")
-      .then((info) => {
+    const buildInfoPromise = props.gitRef ? getLatestBuild(props.deploymentInfo, props.gitRef) : getLatestMainlineBuild(props.deploymentInfo)
+      buildInfoPromise.then((info) => {
         if (info) {
           setMasterBuild(info);
         } else {

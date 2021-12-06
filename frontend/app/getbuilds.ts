@@ -47,8 +47,17 @@ function getGHPublishingJob(
   }
 }
 
-async function getLatestMasterBuild(deploymentInfo: DeployedImageInfo) {
-  return getLatestBuild(deploymentInfo, "master");
+async function getLatestMainlineBuild(deploymentInfo: DeployedImageInfo) {
+  try {
+    const mainBuild = await getLatestBuild(deploymentInfo, "main");
+    return mainBuild;
+  } catch(err) {
+    if(err=="Server returned 404") {
+      return getLatestBuild(deploymentInfo, "master");
+    } else{
+      throw err;
+    }
+  }
 }
 
 async function getLatestBuild(
@@ -181,7 +190,7 @@ async function requestUpdate(to: DockerImage, deploymentName: string) {
   }
 }
 export {
-  getLatestMasterBuild,
+  getLatestMainlineBuild,
   getLatestBuild,
   compareVersionResults,
   CompareVersionResult,

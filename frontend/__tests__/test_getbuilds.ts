@@ -1,7 +1,7 @@
 import {
   CompareVersionResult,
   compareVersionResults,
-  getLatestMasterBuild,
+  getLatestMainlineBuild,
 } from "../app/getbuilds";
 import moxios from "moxios";
 
@@ -157,7 +157,7 @@ describe("compareVersionResults", () => {
   });
 });
 
-describe("getLatestMasterBuild", () => {
+describe("getLatestMainlineBuild", () => {
   beforeEach(() => moxios.install());
   afterEach(() => moxios.uninstall());
 
@@ -177,14 +177,14 @@ describe("getLatestMasterBuild", () => {
       ],
     };
 
-    const resultProm = getLatestMasterBuild(deployed);
+    const resultProm = getLatestMainlineBuild(deployed);
 
     moxios.wait(async () => {
       const req = moxios.requests.mostRecent();
 
       try {
         expect(req.url).toEqual(
-          "/api/project/12345678/master/docker/buildinfo"
+          "/api/project/12345678/main/docker/buildinfo"
         );
       } catch (e) {
         done.fail(e);
@@ -217,6 +217,80 @@ describe("getLatestMasterBuild", () => {
     });
   });
 
+  it("should fallback to using 'master' branch instead of 'main' if the latter is not present", (done) => {
+    const deployed: DeployedImageInfo = {
+      deploymentName: "test",
+      namespace: "test",
+      labels: {
+        "gitlab-project-id": "12345678",
+        "gitlab-publishing-job": "docker",
+      },
+      deployedImages: [
+        {
+          imageName: "fake/some-test",
+          version: "345",
+        },
+      ],
+    };
+
+    const resultProm = getLatestMainlineBuild(deployed);
+
+    moxios.wait(async () => {
+      const req = moxios.requests.mostRecent();
+
+      try {
+        expect(req.url).toEqual(
+            "/api/project/12345678/main/docker/buildinfo"
+        );
+      } catch (e) {
+        done.fail(e);
+      }
+
+      await req.respondWith({
+        status: 404,
+        response: {"status": "notpresent"},
+      });
+
+      moxios.wait(async ()=>{
+        const req = moxios.requests.mostRecent();
+
+        try {
+          expect(req.url).toEqual(
+              "/api/project/12345678/master/docker/buildinfo"
+          );
+        } catch (e) {
+          done.fail(e);
+        }
+        const available: BuildInfo = {
+          ci_commit_sha: "abcde",
+          ci_commit_timestamp: "2021-01-02T03:04:05Z",
+          ci_job_url: "https://some.url",
+          ci_project_name: "test",
+          ci_pipeline_iid: 1234,
+          built_image: {
+            imageName: "fake/some-test",
+            version: "123",
+          },
+        };
+
+        await req.respondWith({
+          status: 200,
+          response: available,
+        });
+
+        const result = await resultProm;
+        try {
+          expect(result).toEqual(available);
+          done();
+        } catch (e) {
+          done.fail(e);
+        }
+
+      })
+
+    });
+  });
+
   it("should fail if the server returns a non-200 response", (done) => {
     const deployed: DeployedImageInfo = {
       deploymentName: "test",
@@ -233,7 +307,7 @@ describe("getLatestMasterBuild", () => {
       ],
     };
 
-    const resultProm = getLatestMasterBuild(deployed);
+    const resultProm = getLatestMainlineBuild(deployed);
 
     const testIt = async () => {
       try {
@@ -242,7 +316,7 @@ describe("getLatestMasterBuild", () => {
 
           try {
             expect(req.url).toEqual(
-              "/api/project/12345678/master/docker/buildinfo"
+              "/api/project/12345678/main/docker/buildinfo"
             );
           } catch (e) {
             done.fail(e);
