@@ -35,17 +35,19 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
-libraryDependencies += "io.circe" %% "circe-yaml" % "0.12.0"
+libraryDependencies += "io.circe" %% "circe-yaml" % "0.14.0"
 
-libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
+libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
-libraryDependencies += "io.skuber" %% "skuber" % "2.6.0"
+libraryDependencies += "io.skuber" %% "skuber" % "2.6.2"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.14"
 
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.7"
+
 //authentication
 libraryDependencies ++= Seq(
-  "com.nimbusds" % "nimbus-jose-jwt" % "8.21",
+  "com.nimbusds" % "nimbus-jose-jwt" % "9.15.2",
 )
 
 val scalacacheVersion = "0.28.0"
