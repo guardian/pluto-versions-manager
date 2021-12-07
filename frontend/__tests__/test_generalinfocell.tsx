@@ -34,7 +34,7 @@ describe("GeneralInfoCell", () => {
       try {
         const req = moxios.requests.mostRecent();
 
-        expect(req.url).toEqual("/api/project/12345/master/upload/buildinfo");
+        expect(req.url).toEqual("/api/project/12345/main/upload/buildinfo");
         const mockBuildInfo: BuildInfo = {
           ci_commit_sha: "abcdefg",
           ci_commit_timestamp: "2021-01-02T03:04:05Z",
@@ -90,7 +90,7 @@ describe("GeneralInfoCell", () => {
       try {
         const req = moxios.requests.mostRecent();
 
-        expect(req.url).toEqual("/api/project/12345/master/upload/buildinfo");
+        expect(req.url).toEqual("/api/project/12345/main/upload/buildinfo");
 
         await act(async () => {
           await req.respondWith({
@@ -102,14 +102,31 @@ describe("GeneralInfoCell", () => {
           rendered.update();
         });
 
-        rendered.find("p").map((elem) => console.log(elem.html()));
+        moxios.wait(async () => {
+          const nextReq = moxios.requests.mostRecent();
+          expect(nextReq.url).toEqual(
+            "/api/project/12345/master/upload/buildinfo"
+          );
 
-        const errorNode = rendered.find("p#error-message");
-        expect(errorNode.exists()).toBeTruthy();
-        expect(errorNode.text()).toEqual(
-          "Could not determine available versions: Server returned 404"
-        );
-        done();
+          await act(async () => {
+            await nextReq.respondWith({
+              status: 404,
+              response: {
+                detail: "not found",
+              },
+            });
+            rendered.update();
+          });
+
+          rendered.find("p").map((elem) => console.log(elem.html()));
+
+          const errorNode = rendered.find("p#error-message");
+          expect(errorNode.exists()).toBeTruthy();
+          expect(errorNode.text()).toEqual(
+            "Could not determine available versions: Server returned 404"
+          );
+          done();
+        });
       } catch (err) {
         done.fail(err);
       }
@@ -139,7 +156,7 @@ describe("GeneralInfoCell", () => {
     moxios.wait(async () => {
       try {
         const req = moxios.requests.mostRecent();
-        expect(req.url).toEqual("/api/project/12345/master/upload/buildinfo");
+        expect(req.url).toEqual("/api/project/12345/main/upload/buildinfo");
 
         await act(async () => {
           await req.respondWith({
