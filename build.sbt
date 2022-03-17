@@ -6,7 +6,7 @@ name := "pluto_versions_manager"
 version := "1.0" 
       
 lazy val `pluto_versions_manager` = (project in file("."))
-  .enablePlugins(PlayScala)
+  .enablePlugins(PlayScala, plugins.JUnitXmlReportPlugin)
   .enablePlugins(AshScriptPlugin) //needed for alpine-based images
   .settings(
     version := sys.props.getOrElse("build.number","DEV"),
@@ -48,6 +48,13 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.7"
 //authentication
 libraryDependencies ++= Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % "9.15.2",
+)
+
+//testing
+Test / testOptions ++= Seq( Tests.Argument("junitxml", "junit.outdir", sys.env.getOrElse("SBT_JUNIT_OUTPUT","/tmp")), Tests.Argument("console") )
+libraryDependencies ++= Seq(
+  "com.novocode" % "junit-interface" % "0.11" % Test,
+  "org.specs2" %% "specs2-junit" % "4.12.12" % Test
 )
 
 val scalacacheVersion = "0.28.0"
