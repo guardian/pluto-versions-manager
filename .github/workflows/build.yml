@@ -72,8 +72,11 @@ jobs:
         name: Prepare test outputs location
 
       - run: yarn install --frozen-lockfile
+        working-directory: frontend
       - run: yarn test
+        working-directory: frontend
       - run: yarn build
+        working-directory: frontend
 
       - name: Build and test everything
         env:
