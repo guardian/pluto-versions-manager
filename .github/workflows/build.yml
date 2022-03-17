@@ -72,7 +72,6 @@ jobs:
         name: Prepare test outputs location
 
       - run: ./ci-build/setup_headers.sh
-        working-directory: frontend
         env:
           HEADERS_DEPLOY_USER: ${{ secrets.HEADERS_DEPLOY_USER }}
           HEADERS_DEPLOY_TOKEN: ${{ secrets.HEADERS_DEPLOY_TOKEN }}
