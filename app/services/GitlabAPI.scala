@@ -16,7 +16,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import scala.concurrent.{ExecutionContext, Future}
 
-class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer: Materializer){
+class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer: Materializer) extends CIPlatform {
   private implicit val ec:ExecutionContext = actorSystem.dispatcher
   private val logger = LoggerFactory.getLogger(getClass)
   protected def http = Http()
