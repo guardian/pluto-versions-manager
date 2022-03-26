@@ -64,11 +64,11 @@ class ProjectsController @Inject() (cc:ControllerComponents,
   }
 
   def jobsForProject(projectId:Long) = IsAdminAsync { uid=> req=>
-    genericOutput(api.jobsForProject(projectId))
+    genericOutput(api.jobsForProject(projectId.toString))
   }
 
   def checkArtifacts(projectId:Long, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
-    api.artifactsZipForBranch(projectId, branchName, jobName)
+    api.artifactsZipForBranch(projectId.toString, branchName, jobName)
       .map(bytes=>{
         val entity = play.api.http.HttpEntity.Strict(bytes, Some("application/zip"))
         Result(
@@ -131,7 +131,7 @@ class ProjectsController @Inject() (cc:ControllerComponents,
     logger.debug(s"jobName is $jobName")
     for {
       gitRef <- Future.fromTry(Try { URLDecoder.decode(branchName, StandardCharsets.UTF_8) })
-      zipContent <- api.artifactsZipForBranch(projectId, gitRef, jobName)
+      zipContent <- api.artifactsZipForBranch(projectId.toString, gitRef, jobName)
       zipReader <- Future(new ZipReader(zipContent.toArray))
       maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo())
     } yield maybeBuildInfo
@@ -143,7 +143,7 @@ class ProjectsController @Inject() (cc:ControllerComponents,
    * @param projectId project ID to query
    */
   def branchesForProject(projectId:Long) = IsAdminAsync { uid=> req=>
-    api.branchesForProject(projectId).map({
+    api.branchesForProject(projectId.toString).map({
       case Right(branches)=>
         Ok(branches.sortBy(_.commit.committed_date).asJson)
       case Left(err)=>
@@ -159,7 +159,7 @@ class ProjectsController @Inject() (cc:ControllerComponents,
   def mrForProject(projectId:Long) = IsAdminAsync { uid=> req=>
     import models.gitlab.MergeRequestCodec._
 
-    api.getOpenMergeRequests(projectId,Some(MergeRequestState.opened)).map({
+    api.getOpenMergeRequests(projectId.toString,Some(MergeRequestState.opened)).map({
       case Right(mrs)=>
         Ok(mrs.sortBy(_.created_at).asJson)
       case Left(err)=>
