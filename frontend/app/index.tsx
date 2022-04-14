@@ -3,7 +3,7 @@ import { render } from "react-dom";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import {
   ThemeProvider,
-  createMuiTheme,
+  createTheme,
   Theme,
   CssBaseline,
 } from "@material-ui/core";
@@ -35,7 +35,7 @@ class App extends React.Component<RootProps, RootState> {
   constructor(props: RootProps) {
     super(props);
 
-    this.theme = createMuiTheme({
+    this.theme = createTheme({
       typography: {
         fontFamily: [
           "sans-serif",
