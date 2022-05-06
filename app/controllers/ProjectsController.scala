@@ -6,7 +6,7 @@ import akka.stream.Materializer
 import auth.{BearerTokenAuth, Security}
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
-import services.{GitlabAPI, HttpError, ZipReader}
+import services.{GithubAPI, GitlabAPI, HttpError, VCSAPI, ZipReader}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
@@ -30,13 +30,14 @@ import scala.util.Try
 
 @Singleton
 class ProjectsController @Inject() (cc:ControllerComponents,
+                                    gitLabAPI:GitlabAPI,
+                                    gitHubAPI:GithubAPI,
                                     override val bearerTokenAuth:BearerTokenAuth,
                                     override val config:Configuration)
                                    (implicit actorSystem: ActorSystem, mat:Materializer) extends AbstractController(cc) with Circe with Security {
   private implicit val memcachedCache = MemcachedCache[BuildInfo](config.get[String]("memcached.location"))
   private val maybeCacheTTL = config.getOptional[Duration]("memcached.ttl")
 
-  private val api = new GitlabAPI(config.get[String]("gitlab.api-token"))
   override protected val logger = LoggerFactory.getLogger(getClass)
 
   /**
@@ -60,30 +61,50 @@ class ProjectsController @Inject() (cc:ControllerComponents,
       })
 
   def knownProjects = IsAdminAsync { uid=> req=>
-    genericOutput(api.listProjects)
+    genericOutput(gitLabAPI.listProjects)
   }
 
-  def jobsForProject(projectId:Long) = IsAdminAsync { uid=> req=>
-    genericOutput(api.jobsForProject(projectId.toString))
+  def jobsForProject(projectId:String) = IsAdminAsync { uid=> req=>
+    withVCSAPI(projectId) { vcs=>
+      genericOutput(vcs.jobsForProject(projectId))
+    }
   }
 
-  def checkArtifacts(projectId:Long, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
-    api.artifactsZipForBranch(projectId.toString, branchName, jobName)
-      .map(bytes=>{
-        val entity = play.api.http.HttpEntity.Strict(bytes, Some("application/zip"))
-        Result(
-          header=ResponseHeader(200, Map.empty),
-          body=entity
-        )
-      })
-      .recover({
-        case err:Throwable=>
-          logger.error(s"gitlab api operation failed: ${err.getMessage}", err)
-          InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
-      })
+  /**
+   * Helper function that calls the given block with an appropriate Version Control System implementation
+   * for the given ID.
+   * If the ID is numeric, then it uses Gitlab, otherwise Github.
+   * @param forId string ID to check
+   * @param block Code to execute. This is passed a VCSAPI instance and is expected to return a Future of any kind
+   * @tparam T kind of the data that is returned
+   * @return whatever is returned from the block
+   */
+  def withVCSAPI[T](forId:String)(block: (VCSAPI)=>Future[T]) = {
+    ProjectIdHelper.numericId(forId) match {
+      case Some(_)=>block(gitLabAPI)  //numeric project ID=>gitlab
+      case None=>block(gitHubAPI)     //string project ID=>github
+    }
   }
 
-  def getBuildInfo(projectId:Long, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
+  def checkArtifacts(projectId:String, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
+    withVCSAPI(projectId) { vcs =>
+      vcs.artifactsZipForBranch(projectId, branchName, jobName)
+        .map(bytes => {
+          val entity = play.api.http.HttpEntity.Strict(bytes, Some("application/zip"))
+          Result(
+            header = ResponseHeader(200, Map.empty),
+            body = entity
+          )
+        })
+        .recover({
+          case err: Throwable =>
+            logger.error(s"gitlab api operation failed: ${err.getMessage}", err)
+            InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
+        })
+    }
+  }
+
+  def getBuildInfo(projectId:String, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
     val cacheKey = s"$projectId-$branchName-$jobName"
     scalacache.get(cacheKey).flatMap({
       case Some(buildInfo)=>
@@ -126,49 +147,56 @@ class ProjectsController @Inject() (cc:ControllerComponents,
    * @return A Future, which contains None if there was no build-info available; Left if there was build-info which could
    *         not be parsed; Right if there was parsable BuildInfo.
    */
-  def findNewBuildInfo(projectId:Long, branchName:String, jobName:String) = {
+  def findNewBuildInfo(projectId:String, branchName:String, jobName:String) = {
     logger.debug(s"branchName is ${branchName}")
     logger.debug(s"jobName is $jobName")
-    for {
-      gitRef <- Future.fromTry(Try { URLDecoder.decode(branchName, StandardCharsets.UTF_8) })
-      zipContent <- api.artifactsZipForBranch(projectId.toString, gitRef, jobName)
-      zipReader <- Future(new ZipReader(zipContent.toArray))
-      maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo())
-    } yield maybeBuildInfo
-
+    withVCSAPI(projectId) { vcs =>
+      for {
+        gitRef <- Future.fromTry(Try {
+          URLDecoder.decode(branchName, StandardCharsets.UTF_8)
+        })
+        zipContent <- vcs.artifactsZipForBranch(projectId.toString, gitRef, jobName)
+        zipReader <- Future(new ZipReader(zipContent.toArray))
+        maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo())
+      } yield maybeBuildInfo
+    }
   }
 
   /**
    * proxy a request to the GitLab API for the recent branches of the project
    * @param projectId project ID to query
    */
-  def branchesForProject(projectId:Long) = IsAdminAsync { uid=> req=>
-    api.branchesForProject(projectId.toString).map({
-      case Right(branches)=>
-        Ok(branches.sortBy(_.commit.committed_date).asJson)
-      case Left(err)=>
-        logger.error(s"could not retrieve branches for project id $projectId: ${err.toString}")
-        InternalServerError(GenericErrorResponse("error",s"gitlab api problem: ${err.toString}").asJson)
-    }).recover({
-      case err:Throwable=>
-        logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
-        InternalServerError(GenericErrorResponse("internal_error","An unexpected exception was thrown, see server logs for details").asJson)
-    })
+  def branchesForProject(projectId:String) = IsAdminAsync { uid=> req=>
+    withVCSAPI(projectId) { vcs =>
+      vcs.branchesForProject(projectId.toString).map({
+        case Right(branches) =>
+          Ok(branches.sortBy(_.commit.committed_date).asJson)
+        case Left(err) =>
+          logger.error(s"could not retrieve branches for project id $projectId: ${err.toString}")
+          InternalServerError(GenericErrorResponse("error", s"gitlab api problem: ${err.toString}").asJson)
+      }).recover({
+        case err: Throwable =>
+          logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
+          InternalServerError(GenericErrorResponse("internal_error", "An unexpected exception was thrown, see server logs for details").asJson)
+      })
+    }
   }
 
-  def mrForProject(projectId:Long) = IsAdminAsync { uid=> req=>
+  def mrForProject(projectId:String) = IsAdminAsync { uid=> req=>
     import models.gitlab.MergeRequestCodec._
 
-    api.getOpenMergeRequests(projectId.toString,Some(MergeRequestState.opened)).map({
-      case Right(mrs)=>
-        Ok(mrs.sortBy(_.created_at).asJson)
-      case Left(err)=>
-        logger.error(s"Could not retrieve merge requests for project id $projectId: ${err.toString}")
-        InternalServerError(GenericErrorResponse("error",s"gitlab api problem: ${err.toString}").asJson)
-    }).recover({
-      case err:Throwable=>
-        logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
-        InternalServerError(GenericErrorResponse("internal_error","An unexpected exception was thrown, see server logs for details").asJson)
-    })
+    withVCSAPI(projectId) { vcs =>
+      vcs.getOpenMergeRequests(projectId, Some(MergeRequestState.opened)).map({
+        case Right(mrs) =>
+          Ok(mrs.sortBy(_.created_at).asJson)
+        case Left(err) =>
+          logger.error(s"Could not retrieve merge requests for project id $projectId: ${err.toString}")
+          InternalServerError(GenericErrorResponse("error", s"gitlab api problem: ${err.toString}").asJson)
+      }).recover({
+        case err: Throwable =>
+          logger.error(s"Get branches operation threw an exception: ${err.getMessage}", err)
+          InternalServerError(GenericErrorResponse("internal_error", "An unexpected exception was thrown, see server logs for details").asJson)
+      })
+    }
   }
 }

@@ -11,12 +11,15 @@ import io.circe.generic.auto._
 import models.gitlab.MergeRequestState.MergeRequestState
 import models.gitlab.{Branch, GitlabProject, JobResponse, MergeRequest, PipelineResponse}
 import org.slf4j.LoggerFactory
+import play.api.Configuration
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer: Materializer) extends VCSAPI {
+@Singleton
+class GitlabAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSystem, materializer: Materializer) extends VCSAPI {
   private implicit val ec:ExecutionContext = actorSystem.dispatcher
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -24,6 +27,7 @@ class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer:
 
   protected def http = Http()
 
+  private val token:String = config.get[String]("gitlab.api-token")
   /**
    * prepend the base URL to the request. The "partial" url _must_ begin with a /.
    * @param partial partial url to append
