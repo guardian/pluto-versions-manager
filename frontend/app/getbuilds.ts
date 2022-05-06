@@ -27,7 +27,7 @@ async function getLatestBuildInternal(
  * finds the value of the "gitlab-project-id" label
  * @param deploymentInfo
  */
-function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
+function getGLProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
   if (deploymentInfo.labels.hasOwnProperty("gitlab-project-id")) {
     return deploymentInfo.labels["gitlab-project-id"];
   } else {
@@ -35,9 +35,9 @@ function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
   }
 }
 
-function getGLProjectId(deploymentInfo:DeployedImageInfo): string | undefined {
-  if (deploymentInfo.labels.hasOwnProperty("github-org") && deploymentInfo.labels.hasOwnProperty("github-project-name")) {
-    return deploymentInfo.labels["github-org"] + "/" + deploymentInfo.labels["github-project-name"];
+function getGHProjectId(deploymentInfo:DeployedImageInfo): string | undefined {
+  if (deploymentInfo.labels.hasOwnProperty("github-project-name")) {
+    return deploymentInfo.labels["github-project-name"];
   } else {
     return undefined;
   }

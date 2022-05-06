@@ -25,6 +25,7 @@
 
   <logger name="services.GitlabAPI" level="WARN"/>
   <logger name="services.GithubAPI" level="DEBUG"/>
+  <logger name="services.HttpHelpers" level="DEBUG"/>
 
   <logger name="services" level="INFO"/>
   <logger name="controllers.ProjectsController" level="DEBUG"/>

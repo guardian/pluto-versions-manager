@@ -1,7 +1,7 @@
 package services
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.{Accept, Location}
+import akka.http.scaladsl.model.headers.{Accept, Authorization, GenericHttpCredentials, Location}
 import akka.http.scaladsl.model.{HttpCharsets, HttpRequest, HttpResponse, MediaRange, MediaType, MediaTypes, StatusCodes, Uri}
 import akka.stream.Materializer
 import akka.util.ByteString
@@ -35,10 +35,14 @@ class GithubAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSyst
 
   private def makeRequest(section:String, subpath:String) = {
     githubOrgName match {
-      case Some(org)=>HttpRequest(
-        uri = s"https://api.github.com/$section/$org/$subpath",
-        headers = Seq(defaultGithubHeaders)
-      )
+      case Some(org)=>
+        val uriString = s"https://api.github.com/$section/$org/$subpath"
+        val actualHeaders = Seq(Some(defaultGithubHeaders), githubToken.map(t=>Authorization(GenericHttpCredentials("token", t)))).collect({case Some(h)=>h})
+        logger.debug(s"Github API request is $uriString")
+          HttpRequest(
+          uri = uriString,
+          headers = actualHeaders
+        )
       case None=>throw new RuntimeException("Github integration is not configured. Please set `github.orgname` in the app config")
     }
   }
@@ -125,7 +129,8 @@ class GithubAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSyst
         })
     }
 
-    recursiveFind(HttpRequest(uri=providedUrl, headers=Seq(defaultGithubHeaders))).flatMap(consumeResponseContent)
+    val actualHeaders = Seq(Some(defaultGithubHeaders), githubToken.map(t=>Authorization(GenericHttpCredentials("token", t)))).collect({case Some(h)=>h})
+    recursiveFind(HttpRequest(uri=providedUrl, headers=actualHeaders)).flatMap(consumeResponseContent)
   }
 
   private def listArtifacts(artifactsUrl:Uri):Future[Either[circe.Error, Seq[GitHubArtifact]]] = {

@@ -16,7 +16,6 @@ case class BuildInfo(
                     ci_project_name: String,
                     ci_merge_request_project_url: Option[String],
                     ci_merge_request_title: Option[String],
-                    ci_pipeline_iid: Int,
                     built_image:Option[DockerImage]
                     )
 
