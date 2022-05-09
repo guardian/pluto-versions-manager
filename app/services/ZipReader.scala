@@ -97,7 +97,7 @@ class ZipReader(bytes:Array[Byte]) {
    * calls locateBuildInfoContent and marshals the resulting bytestream info a BuildInfo object
    * @return
    */
-  def locateBuildInfo() = locateBuildInfoContent().map(_.map(bytes=>{
+  def locateBuildInfo(maybeAwsAccount:Option[String], maybeRegion:Option[String]) = locateBuildInfoContent().map(_.map(bytes=>{
     import models.DockerImageDecoder._
     parser
       .parse(bytes.utf8String)
@@ -105,7 +105,11 @@ class ZipReader(bytes:Array[Byte]) {
       case err@Left(parseErr)=>
         logger.error(s"Parsing error: $parseErr. Incoming data was: ${bytes.utf8String}")
         err
-      case result@Right(_)=>result
+      case Right(result)=>
+        (maybeAwsAccount, maybeRegion) match {
+          case (Some(awsAcct), Some(region))=>Right(result.fixedUpAwsImage(awsAcct, region))
+          case (_, _)=>Right(result)
+        }
     }
   }))
 

@@ -150,14 +150,17 @@ class ProjectsController @Inject() (cc:ControllerComponents,
   def findNewBuildInfo(projectId:String, branchName:String, jobName:String) = {
     logger.debug(s"branchName is ${branchName}")
     logger.debug(s"jobName is $jobName")
+    val maybeAwsAccount = config.getOptional[String]("aws.accountId")
+    val maybeAwsRegion = config.getOptional[String]("aws.region")
+
     withVCSAPI(projectId) { vcs =>
       for {
         gitRef <- Future.fromTry(Try {
           URLDecoder.decode(branchName, StandardCharsets.UTF_8)
         })
-        zipContent <- vcs.artifactsZipForBranch(projectId.toString, gitRef, jobName)
+        zipContent <- vcs.artifactsZipForBranch(projectId, gitRef, jobName)
         zipReader <- Future(new ZipReader(zipContent.toArray))
-        maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo())
+        maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo(maybeAwsAccount, maybeAwsRegion))
       } yield maybeBuildInfo
     }
   }
