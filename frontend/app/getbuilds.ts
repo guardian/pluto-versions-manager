@@ -1,8 +1,8 @@
 import axios from "axios";
 import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 
-function doubleEncode(str:string):string {
-  return encodeURIComponent(encodeURIComponent(str))
+function doubleEncode(str: string): string {
+  return encodeURIComponent(encodeURIComponent(str));
 }
 
 async function getLatestBuildInternal(
@@ -11,7 +11,9 @@ async function getLatestBuildInternal(
   branchName: string
 ): Promise<BuildInfo> {
   //the branch name may contain a /; in this case it must be _double_ encoded or the / is considered part of the html path
-  const url = `/api/project/${doubleEncode(projectId)}/${doubleEncode(branchName)}/${buildJob}/buildinfo`;
+  const url = `/api/project/${doubleEncode(projectId)}/${doubleEncode(
+    branchName
+  )}/${buildJob}/buildinfo`;
   const response = await axios.get<BuildInfo>(url, {
     validateStatus: () => true,
   });
@@ -35,7 +37,7 @@ function getGLProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
   }
 }
 
-function getGHProjectId(deploymentInfo:DeployedImageInfo): string | undefined {
+function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
   if (deploymentInfo.labels.hasOwnProperty("github-project-name")) {
     return deploymentInfo.labels["github-project-name"];
   } else {
@@ -58,9 +60,9 @@ function getGHPublishingJob(
 }
 
 function getGLPublishingJob(
-    deploymentInfo: DeployedImageInfo
+  deploymentInfo: DeployedImageInfo
 ): string | undefined {
-  if(deploymentInfo.labels.hasOwnProperty("github-publishing-job")) {
+  if (deploymentInfo.labels.hasOwnProperty("github-publishing-job")) {
     return deploymentInfo.labels["github-publishing-job"];
   } else {
     return undefined;
@@ -84,7 +86,8 @@ async function getLatestBuild(
   deploymentInfo: DeployedImageInfo,
   branchName: string
 ) {
-  const maybeProjectId = getGLProjectId(deploymentInfo) ?? getGHProjectId(deploymentInfo);
+  const maybeProjectId =
+    getGLProjectId(deploymentInfo) ?? getGHProjectId(deploymentInfo);
   if (!maybeProjectId) {
     console.log(
       `${deploymentInfo.deploymentName}: can't get build info because there is no gitlab-project-id set in the labels`
@@ -92,7 +95,8 @@ async function getLatestBuild(
     return;
   }
 
-  const jobName = getGLPublishingJob(deploymentInfo) ?? getGHPublishingJob(deploymentInfo);
+  const jobName =
+    getGLPublishingJob(deploymentInfo) ?? getGHPublishingJob(deploymentInfo);
   if (!jobName) {
     console.log(
       `${deploymentInfo.deploymentName}: can't get build info because there is not gitlab-publishing-job set in the labels`

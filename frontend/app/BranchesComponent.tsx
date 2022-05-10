@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router";
-import {Button, Chip, Grid, LinearProgress, makeStyles, Typography} from "@material-ui/core";
+import {
+  Button,
+  Chip,
+  Grid,
+  LinearProgress,
+  makeStyles,
+  Typography,
+} from "@material-ui/core";
 import axios from "axios";
 import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 import DeploymentStatusIcon from "./deploymentstatusicon";
@@ -133,41 +140,41 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
     }
   };
 
-  const getGLProjectId = (currentDeployment:DeployedImageInfo) => {
+  const getGLProjectId = (currentDeployment: DeployedImageInfo) => {
     try {
-      return parseInt(
-          currentDeployment.labels["gitlab-project-id"]
-      );
+      return parseInt(currentDeployment.labels["gitlab-project-id"]);
     } catch (err) {
       console.error("Could not get Gitlab project id: ", err);
       return undefined;
     }
-  }
+  };
 
-  const getGHProjectId = (currentDeployment:DeployedImageInfo) => {
+  const getGHProjectId = (currentDeployment: DeployedImageInfo) => {
     try {
-      return currentDeployment.labels["github-project-name"]
+      return currentDeployment.labels["github-project-name"];
     } catch (err) {
       console.error("Could not get Github project id: ", err);
       return undefined;
     }
-  }
+  };
 
-  const withProjectId = (cb:(project_id:string)=>void)=>{
+  const withProjectId = (cb: (project_id: string) => void) => {
     if (currentDeployment) {
-      const maybeGLproject = getGLProjectId(currentDeployment) ;
-      const maybeProjectIdString = maybeGLproject ? maybeGLproject.toString() : getGHProjectId(currentDeployment);
+      const maybeGLproject = getGLProjectId(currentDeployment);
+      const maybeProjectIdString = maybeGLproject
+        ? maybeGLproject.toString()
+        : getGHProjectId(currentDeployment);
 
-      if(maybeProjectIdString) {
+      if (maybeProjectIdString) {
         cb(maybeProjectIdString);
       } else {
         SystemNotification.open(
-            SystemNotifcationKind.Error,
-            "Could not find project id for this component"
+          SystemNotifcationKind.Error,
+          "Could not find project id for this component"
         );
       }
     }
-  }
+  };
 
   useEffect(() => {
     withProjectId(refreshBranches);
@@ -242,7 +249,9 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
                 />
               ))
             : null}
-          {loading ? <LinearProgress style={{marginTop: "1em"}}/> : undefined }
+          {loading ? (
+            <LinearProgress style={{ marginTop: "1em" }} />
+          ) : undefined}
         </Grid>
         <Grid>
           <ul>

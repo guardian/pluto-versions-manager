@@ -80,8 +80,11 @@ const MainPage: React.FC<RouteComponentProps> = (props) => {
       switch (response.status) {
         case 200:
           setDeployments(
-            response.data.filter((info) =>
-              info.labels.hasOwnProperty("gitlab-project-id") || (info.labels.hasOwnProperty("github-project-name") && info.labels.hasOwnProperty("github-org"))
+            response.data.filter(
+              (info) =>
+                info.labels.hasOwnProperty("gitlab-project-id") ||
+                (info.labels.hasOwnProperty("github-project-name") &&
+                  info.labels.hasOwnProperty("github-org"))
             )
           );
           break;
