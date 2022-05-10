@@ -113,7 +113,7 @@ class GitlabAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSyst
       makeFullUrl(s"/$projectId/jobs/artifacts/${encodeParam(branchName)}/download?job=${encodeParam(jobName)}"),
       Map(),
       None
-    )
+    ).map(Some.apply)
   }
 
   def branchesForProject(projectId:String) = {

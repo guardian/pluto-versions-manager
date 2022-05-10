@@ -89,12 +89,15 @@ class ProjectsController @Inject() (cc:ControllerComponents,
   def checkArtifacts(projectId:String, branchName:String, jobName:String) = IsAdminAsync { uid=> req=>
     withVCSAPI(projectId) { vcs =>
       vcs.artifactsZipForBranch(projectId, branchName, jobName)
-        .map(bytes => {
-          val entity = play.api.http.HttpEntity.Strict(bytes, Some("application/zip"))
-          Result(
-            header = ResponseHeader(200, Map.empty),
-            body = entity
-          )
+        .map({
+          case Some(bytes)=>
+            val entity = play.api.http.HttpEntity.Strict(bytes, Some("application/zip"))
+            Result(
+              header = ResponseHeader(200, Map.empty),
+              body = entity
+            )
+          case None=>
+            NotFound(GenericErrorResponse("not_found","not found").asJson)
         })
         .recover({
           case err: Throwable =>
@@ -154,14 +157,24 @@ class ProjectsController @Inject() (cc:ControllerComponents,
     val maybeAwsRegion = config.getOptional[String]("aws.region")
 
     withVCSAPI(projectId) { vcs =>
-      for {
+      val maybeZipContent = for {
         gitRef <- Future.fromTry(Try {
           URLDecoder.decode(branchName, StandardCharsets.UTF_8)
         })
         zipContent <- vcs.artifactsZipForBranch(projectId, gitRef, jobName)
-        zipReader <- Future(new ZipReader(zipContent.toArray))
-        maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo(maybeAwsAccount, maybeAwsRegion))
-      } yield maybeBuildInfo
+      } yield zipContent
+
+      maybeZipContent.flatMap({
+        case Some(zipContent)=>
+          for {
+            zipReader <- Future(new ZipReader(zipContent.toArray))
+            maybeBuildInfo <- Future.fromTry(zipReader.locateBuildInfo(maybeAwsAccount, maybeAwsRegion))
+          } yield maybeBuildInfo
+        case None=>
+          Future(None)
+      })
+
+
     }
   }
 

@@ -177,7 +177,7 @@ class GithubAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSyst
    * @param jobName not used
    * @return a Future, containing a ByteString representation of the entire compressed zip data. On error this will fail.
    */
-  override def artifactsZipForBranch(projectId: String, branchName: String, jobName: String): Future[ByteString] = {
+  override def artifactsZipForBranch(projectId: String, branchName: String, jobName: String): Future[Option[ByteString]] = {
     for {
       maybeRun <- workflowRunsForBranch(projectId, branchName).map({
         case Left(err)=>
@@ -198,7 +198,7 @@ class GithubAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSyst
             Future(results.find(!_.expired))
           }
       }
-      content <- if(maybeArtifactInfo.isDefined) downloadArtifactsZip(maybeArtifactInfo.get.archive_download_url) else throw new RuntimeException("No artifacts available")
+      content <- if(maybeArtifactInfo.isDefined) downloadArtifactsZip(maybeArtifactInfo.get.archive_download_url).map(Some.apply) else Future(None)
     } yield content
   }
 

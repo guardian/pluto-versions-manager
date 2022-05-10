@@ -14,7 +14,7 @@ trait VCSAPI {
 
   def jobsForProject(projectId:String):Future[Either[Error, Seq[JobResponse]]]
 
-  def artifactsZipForBranch(projectId:String, branchName:String, jobName:String):Future[ByteString]
+  def artifactsZipForBranch(projectId:String, branchName:String, jobName:String):Future[Option[ByteString]]
 
   def branchesForProject(projectId:String):Future[Either[Error, Seq[Branch]]]
 

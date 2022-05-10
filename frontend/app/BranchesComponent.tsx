@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router";
-import { Button, Chip, Grid, makeStyles, Typography } from "@material-ui/core";
+import {Button, Chip, Grid, LinearProgress, makeStyles, Typography} from "@material-ui/core";
 import axios from "axios";
 import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 import DeploymentStatusIcon from "./deploymentstatusicon";
@@ -58,12 +58,12 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
   const [currentDeployment, setCurrentDeployment] =
     useState<DeployedImageInfo | undefined>(undefined);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const classes = useStyles();
   const history = useHistory();
 
-  const refreshBranches = async (project_id: number) => {
+  const refreshBranches = async (project_id: string) => {
     if (!project_id) {
       SystemNotification.open(
         SystemNotifcationKind.Error,
@@ -102,7 +102,7 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
     }
   };
 
-  const refreshMergeRequests = async (project_id: number) => {
+  const refreshMergeRequests = async (project_id: string) => {
     if (!project_id) {
       SystemNotification.open(
         SystemNotifcationKind.Error,
@@ -133,39 +133,49 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
     }
   };
 
-  useEffect(() => {
-    if (currentDeployment) {
-      try {
-        const project_id = parseInt(
+  const getGLProjectId = (currentDeployment:DeployedImageInfo) => {
+    try {
+      return parseInt(
           currentDeployment.labels["gitlab-project-id"]
-        );
-        refreshMergeRequests(project_id);
-      } catch (err) {
-        console.error("Could not get project id: ", err);
+      );
+    } catch (err) {
+      console.error("Could not get Gitlab project id: ", err);
+      return undefined;
+    }
+  }
+
+  const getGHProjectId = (currentDeployment:DeployedImageInfo) => {
+    try {
+      return currentDeployment.labels["github-project-name"]
+    } catch (err) {
+      console.error("Could not get Github project id: ", err);
+      return undefined;
+    }
+  }
+
+  const withProjectId = (cb:(project_id:string)=>void)=>{
+    if (currentDeployment) {
+      const maybeGLproject = getGLProjectId(currentDeployment) ;
+      const maybeProjectIdString = maybeGLproject ? maybeGLproject.toString() : getGHProjectId(currentDeployment);
+
+      if(maybeProjectIdString) {
+        cb(maybeProjectIdString);
+      } else {
         SystemNotification.open(
-          SystemNotifcationKind.Error,
-          "Could not find project id for this component"
+            SystemNotifcationKind.Error,
+            "Could not find project id for this component"
         );
       }
     }
-  }, [currentDeployment, displayBranchesLimit]);
+  }
 
   useEffect(() => {
-    if (currentDeployment) {
-      try {
-        const project_id = parseInt(
-          currentDeployment.labels["gitlab-project-id"]
-        );
-        refreshBranches(project_id);
-      } catch (err) {
-        console.error("Could not get project id: ", err);
-        SystemNotification.open(
-          SystemNotifcationKind.Error,
-          "Could not find project id for this component"
-        );
-      }
-    }
+    withProjectId(refreshBranches);
   }, [knownMergeRequests]);
+
+  useEffect(() => {
+    withProjectId(refreshMergeRequests);
+  }, [currentDeployment, displayBranchesLimit]);
 
   const refreshCurrentDeployment = async () => {
     setLoading(true);
@@ -232,6 +242,7 @@ const BranchesComponent: React.FC<RouteComponentProps<BranchesRouteParams>> = (
                 />
               ))
             : null}
+          {loading ? <LinearProgress style={{marginTop: "1em"}}/> : undefined }
         </Grid>
         <Grid>
           <ul>
