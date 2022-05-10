@@ -193,7 +193,13 @@ class GithubAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSyst
           throw new RuntimeException("Bad response from server")
         case Right(results)=>
           if(results.length>1) {
-            Future(results.filter(_.name=="build-info").filter(!_.expired).sortBy(_.created_at).headOption)
+            Future(
+              results
+                .filter(art=>art.name=="build-info" || art.name==jobName)
+                .filter(!_.expired)
+                .sortBy(_.created_at)
+                .headOption
+            )
           } else {
             Future(results.find(!_.expired))
           }
