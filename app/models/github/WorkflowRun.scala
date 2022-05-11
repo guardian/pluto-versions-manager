@@ -10,12 +10,6 @@ case class WorkflowRun(id:Long, name: String, node_id:String, check_suite_id: Lo
                        jobs_url:Option[String], artifacts_url:String, logs_url:String, check_suite_url:String, workflow_url:String) {
   def mapToGitlab:JobResponse = {
     throw new RuntimeException("WorkflowRun.mapToGitlab not implemented yet")
-//    JobResponse(
-//      id = id,
-//      name = name,
-//      created_at = created_at,
-//      started_at = run_started_at,
-//    )
   }
 }
 
