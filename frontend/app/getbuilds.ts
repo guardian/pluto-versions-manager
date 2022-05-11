@@ -1,14 +1,18 @@
 import axios from "axios";
 import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 
+function doubleEncode(str: string): string {
+  return encodeURIComponent(encodeURIComponent(str));
+}
+
 async function getLatestBuildInternal(
   projectId: string,
   buildJob: string,
   branchName: string
 ): Promise<BuildInfo> {
   //the branch name may contain a /; in this case it must be _double_ encoded or the / is considered part of the html path
-  const url = `/api/project/${projectId}/${encodeURIComponent(
-    encodeURIComponent(branchName)
+  const url = `/api/project/${doubleEncode(projectId)}/${doubleEncode(
+    branchName
   )}/${buildJob}/buildinfo`;
   const response = await axios.get<BuildInfo>(url, {
     validateStatus: () => true,
@@ -25,9 +29,17 @@ async function getLatestBuildInternal(
  * finds the value of the "gitlab-project-id" label
  * @param deploymentInfo
  */
-function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
+function getGLProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
   if (deploymentInfo.labels.hasOwnProperty("gitlab-project-id")) {
     return deploymentInfo.labels["gitlab-project-id"];
+  } else {
+    return undefined;
+  }
+}
+
+function getGHProjectId(deploymentInfo: DeployedImageInfo): string | undefined {
+  if (deploymentInfo.labels.hasOwnProperty("github-project-name")) {
+    return deploymentInfo.labels["github-project-name"];
   } else {
     return undefined;
   }
@@ -42,6 +54,16 @@ function getGHPublishingJob(
 ): string | undefined {
   if (deploymentInfo.labels.hasOwnProperty("gitlab-publishing-job")) {
     return deploymentInfo.labels["gitlab-publishing-job"];
+  } else {
+    return undefined;
+  }
+}
+
+function getGLPublishingJob(
+  deploymentInfo: DeployedImageInfo
+): string | undefined {
+  if (deploymentInfo.labels.hasOwnProperty("github-publishing-job")) {
+    return deploymentInfo.labels["github-publishing-job"];
   } else {
     return undefined;
   }
@@ -64,7 +86,8 @@ async function getLatestBuild(
   deploymentInfo: DeployedImageInfo,
   branchName: string
 ) {
-  const maybeProjectId = getGHProjectId(deploymentInfo);
+  const maybeProjectId =
+    getGLProjectId(deploymentInfo) ?? getGHProjectId(deploymentInfo);
   if (!maybeProjectId) {
     console.log(
       `${deploymentInfo.deploymentName}: can't get build info because there is no gitlab-project-id set in the labels`
@@ -72,7 +95,8 @@ async function getLatestBuild(
     return;
   }
 
-  const jobName = getGHPublishingJob(deploymentInfo);
+  const jobName =
+    getGLPublishingJob(deploymentInfo) ?? getGHPublishingJob(deploymentInfo);
   if (!jobName) {
     console.log(
       `${deploymentInfo.deploymentName}: can't get build info because there is not gitlab-publishing-job set in the labels`

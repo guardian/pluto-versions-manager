@@ -3,10 +3,20 @@ package models.gitlab
 import io.circe.{Decoder, Encoder}
 
 import java.time.ZonedDateTime
+import scala.annotation.switch
 
 case object MergeRequestState extends Enumeration {
   type MergeRequestState = Value
   val opened, closed, locked, merged = Value
+
+  //maps the Github status values to the merge request values
+  def fromGithub(status:String) = (status: @switch) match {
+    case "open"=>opened
+    case "closed"=>closed
+    case _=>
+      //this is kinda placeholder; should break in a nice obvious way if we need to add anything
+      throw new NoSuchElementException(s"Did not recognise github status $status")
+  }
 }
 
 object MergeRequestCodec {

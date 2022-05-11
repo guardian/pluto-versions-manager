@@ -16,9 +16,15 @@ case class BuildInfo(
                     ci_project_name: String,
                     ci_merge_request_project_url: Option[String],
                     ci_merge_request_title: Option[String],
-                    ci_pipeline_iid: Int,
                     built_image:Option[DockerImage]
-                    )
+                    ) {
+  def fixedUpAwsImage(awsAccount:String, awsRegion:String):BuildInfo = {
+    built_image match {
+      case None=>this
+      case Some(img)=>copy(built_image=Some(img.fixedUpAwsImage(awsAccount, awsRegion)))
+    }
+  }
+}
 
 object DockerImageDecoder {
   implicit val dockerImageDecoder:Decoder[DockerImage] = new Decoder[DockerImage] {

@@ -36,11 +36,22 @@ class DeploymentsController @Inject() (kubernetes:kubernetes,
       })
   }
 
-  def getDeploymentForProjectId(projectId:Long) = IsAdminAsync { uid=> req=>
+  def getDeploymentForProjectId(projectId:String) = IsAdminAsync { uid=> req=>
+    val predicate = ProjectIdHelper.numericId(projectId) match {
+      case Some(_) => (i:DeployedImageInfo)=>i.labels.get("gitlab-project-id").contains(projectId)
+      case None    =>
+        val idParts = projectId.split("/")
+        if(idParts.length!=2) {
+          throw new RuntimeException(s"GitHub project ID $projectId was not valid, did not contain exactly one /")
+        } else {
+          (i:DeployedImageInfo)=>i.labels.get("github-org").contains(idParts.head) && i.labels.get("github-project-name").contains(idParts(1))
+        }
+    }
+
     kubernetes
       .listDeployments()
       .map(_.map(DeployedImageInfo.fromDeployment))
-      .map(_.filter(_.labels.get("gitlab-project-id").contains(projectId.toString)))
+      .map(_.filter(predicate))
       .map(results=>Ok(results.asJson))
       .recover({
         case err:Throwable=>

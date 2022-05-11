@@ -14,6 +14,10 @@ case class DockerImage (imageName:String, version:String) {
   }
 
   override def toString = s"$imageName:$version"
+
+  def fixedUpAwsImage(awsAccount:String, awsRegion:String):DockerImage = {
+    copy(imageName=imageName.replaceAll("AWS_ACCOUNT_ID", awsAccount).replaceAll("AWS_REGION", awsRegion))
+  }
 }
 
 object DockerImage {

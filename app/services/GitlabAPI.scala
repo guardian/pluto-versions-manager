@@ -11,48 +11,29 @@ import io.circe.generic.auto._
 import models.gitlab.MergeRequestState.MergeRequestState
 import models.gitlab.{Branch, GitlabProject, JobResponse, MergeRequest, PipelineResponse}
 import org.slf4j.LoggerFactory
+import play.api.Configuration
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer: Materializer){
+@Singleton
+class GitlabAPI @Inject() (config:Configuration)(implicit actorSystem: ActorSystem, materializer: Materializer) extends VCSAPI {
   private implicit val ec:ExecutionContext = actorSystem.dispatcher
   private val logger = LoggerFactory.getLogger(getClass)
+
+  import HttpHelpers._
+
   protected def http = Http()
 
+  private val token:String = config.get[String]("gitlab.api-token")
   /**
    * prepend the base URL to the request. The "partial" url _must_ begin with a /.
    * @param partial partial url to append
    * @return the full url string
    */
   def makeFullUrl(partial:String) = "https://gitlab.com/api/v4/projects" + partial
-
-  /**
-   * read in the server response and marshal it from raw JSON
-   * @param response Akka http response
-   * @return
-   */
-  protected def consumeResponseContent(response:HttpResponse) =
-      response
-        .entity
-        .dataBytes
-        .toMat(Sink.reduce[ByteString]((acc, elem)=>acc.concat(elem)))(Keep.right)
-        .run()
-
-  /**
-   * unmarshals content from `consumeResponseContent` to an object of the type given by O.
-   * takes in a Future to make composition easier.
-   * @param from a Future containing a ByteString of json content, from `consumeResponseContent`
-   * @tparam O the data type to marshal out to
-   * @return either a Right with the object or a Left containing a decoding error.
-   */
-  protected def unmarshalContent[O:io.circe.Decoder](from:Future[ByteString]) =
-        from.map(bytes=>{
-          val stringContent = bytes.utf8String
-          logger.debug(s"Server response was $stringContent")
-          io.circe.parser.parse(bytes.utf8String).flatMap(_.as[O])
-        })
 
   /**
    * makes an HTTP request to the github API, setting the authorization and content types as appropriate
@@ -123,26 +104,26 @@ class GitlabAPI (token:String) (implicit actorSystem: ActorSystem, materializer:
     makeRequest[Seq[GitlabProject]](HttpMethods.GET, makeFullUrl("?owned=true"), Map(), None)
   }
 
-  def jobsForProject(projectId:Long) = {
+  def jobsForProject(projectId:String) = {
     makeRequest[Seq[JobResponse]](HttpMethods.GET, makeFullUrl(s"/$projectId/jobs?scope=success"), Map(), None)
   }
 
-  def artifactsZipForBranch(projectId:Long, branchName:String, jobName:String) = {
+  def artifactsZipForBranch(projectId:String, branchName:String, jobName:String) = {
     makeRequestRaw(HttpMethods.GET,
       makeFullUrl(s"/$projectId/jobs/artifacts/${encodeParam(branchName)}/download?job=${encodeParam(jobName)}"),
       Map(),
       None
-    )
+    ).map(Some.apply)
   }
 
-  def branchesForProject(projectId:Long) = {
+  def branchesForProject(projectId:String) = {
     makeRequest[Seq[Branch]](HttpMethods.GET,
       makeFullUrl(s"/$projectId/repository/branches"),
       Map(),
       None)
   }
 
-  def getOpenMergeRequests(projectId:Long, forStatus:Option[MergeRequestState]) = {
+  def getOpenMergeRequests(projectId:String, forStatus:Option[MergeRequestState]) = {
     import models.gitlab.MergeRequestCodec._
 
     val baseUrl = s"/$projectId/merge_requests"
