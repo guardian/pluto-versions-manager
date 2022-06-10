@@ -7,13 +7,24 @@ import {
   Theme,
   CssBaseline,
 } from "@material-ui/core";
-import { AppSwitcher, Header, SystemNotification } from "pluto-headers";
+import {
+  AppSwitcher,
+  Header,
+  JwtDataShape,
+  OAuthContextData,
+  OAuthContextProvider,
+  SystemNotification,
+  UserContextProvider,
+  verifyExistingLogin,
+} from "@guardian/pluto-headers";
 import MainPage from "./mainpage";
 import axios from "axios";
 import BranchesComponent from "./BranchesComponent";
 
 interface RootProps {}
-interface RootState {}
+interface RootState {
+  userProfile?: JwtDataShape;
+}
 
 axios.interceptors.request.use((config) => {
   const token = window.localStorage.getItem("pluto:access-token");
@@ -49,23 +60,56 @@ class App extends React.Component<RootProps, RootState> {
         type: "dark",
       },
     });
+
+    this.state = {
+      userProfile: undefined,
+    };
+
+    this.oAuthConfigLoaded = this.oAuthConfigLoaded.bind(this);
+  }
+
+  haveToken() {
+    return window.localStorage.getItem("pluto:access-token");
+  }
+
+  oAuthConfigLoaded(oAuthConfig: OAuthContextData) {
+    //if we already have a user token at mount, verify it and update our internal state
+    //if we don't, ignore for the time being; it will be set dynamically when the login occurs
+    console.log("loaded oauthconfig: ", oAuthConfig);
+    if (this.haveToken()) {
+      verifyExistingLogin(oAuthConfig)
+        .then((profile) => this.setState({ userProfile: profile }))
+        .catch((err) => {
+          console.error("Could not verify existing user profile: ", err);
+        });
+    }
   }
 
   render() {
     return (
-      <ThemeProvider theme={this.theme}>
-        <CssBaseline />
-        <Header />
-        <AppSwitcher />
-        <Switch>
-          <Route
-            path="/:deployment_name/branches"
-            component={BranchesComponent}
-          />
-          <Route exact path="/" component={MainPage} />
-        </Switch>
-        <SystemNotification />
-      </ThemeProvider>
+      <OAuthContextProvider onLoaded={this.oAuthConfigLoaded}>
+        <UserContextProvider
+          value={{
+            profile: this.state.userProfile,
+            updateProfile: (newValue) =>
+              this.setState({ userProfile: newValue }),
+          }}
+        >
+          <ThemeProvider theme={this.theme}>
+            <CssBaseline />
+            <Header />
+            <AppSwitcher />
+            <Switch>
+              <Route
+                path="/:deployment_name/branches"
+                component={BranchesComponent}
+              />
+              <Route exact path="/" component={MainPage} />
+            </Switch>
+            <SystemNotification />
+          </ThemeProvider>
+        </UserContextProvider>
+      </OAuthContextProvider>
     );
   }
 }
