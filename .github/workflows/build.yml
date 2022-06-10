@@ -57,9 +57,6 @@ jobs:
       - run: "echo -e \"\n//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}\" >> .npmrc"
         working-directory: frontend
 
-      - run: "cat .npmrc"
-        working-directory: frontend
-
       - run: yarn install --frozen-lockfile
         working-directory: frontend
         env:
