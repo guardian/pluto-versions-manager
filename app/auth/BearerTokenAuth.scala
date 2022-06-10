@@ -159,6 +159,24 @@ class BearerTokenAuth @Inject() (config:Configuration) {
   }
 
   /**
+   * returns a boolean indicating if the claims indicate administrative rights.
+   * This is done by checking the "roles" claim first, and if that does not exist then checking for the existence of an
+   * "admin claim"
+   * @param claims
+   */
+  protected def jwtIsAdmin(claims:JWTClaimsSet) = {
+    (Option(claims.getStringArrayClaim("roles")), Option(claims.getStringClaim(isAdminClaimName()))) match {
+      case (Some(roles), _)=>
+        logger.info(s"Administrative rights check via roles claim")
+        roles.contains(isAdminClaimName())
+      case (_, Some(_))=>
+        true
+      case (_, None) =>
+        false
+    }
+  }
+
+  /**
    * check the given parsed claims set to see if the token has already expired
    * @param claims JWTClaimsSet representing the token under consideration
    * @return a Try, containing either the claims set or a failure indicating the reason authentication failed. This is
@@ -169,8 +187,12 @@ class BearerTokenAuth @Inject() (config:Configuration) {
       logger.debug(s"JWT was valid but expired at ${claims.getExpirationTime.formatted("YYYY-MM-dd HH:mm:ss")}")
       Left(LoginResultExpired(claims.getSubject))
     } else {
-      val isAdmin:Boolean = Option(claims.getStringClaim(isAdminClaimName())).isDefined
-
+      val isAdmin = jwtIsAdmin(claims)
+      if(isAdmin) {
+        logger.info(s"${claims.getSubject} (${claims.getStringClaim("email")}) is an administrator")
+      } else {
+        logger.info(s"${claims.getSubject} (${claims.getStringClaim("email")}) is not an administrator")
+      }
       Right(LoginResultOK(claims, isAdmin))
     }
   }
