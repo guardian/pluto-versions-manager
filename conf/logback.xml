@@ -29,6 +29,8 @@
 
   <logger name="services" level="INFO"/>
   <logger name="controllers.ProjectsController" level="DEBUG"/>
+  <logger name="auth" level="DEBUG"/>
+
   <root level="WARN">
     <appender-ref ref="ASYNCSTDOUT" />
   </root>
