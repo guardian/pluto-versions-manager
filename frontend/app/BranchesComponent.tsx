@@ -9,7 +9,10 @@ import {
   Typography,
 } from "@material-ui/core";
 import axios from "axios";
-import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
+import {
+  SystemNotification,
+  SystemNotifcationKind,
+} from "@guardian/pluto-headers";
 import DeploymentStatusIcon from "./deploymentstatusicon";
 import DockerImageName from "./dockerimagename";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";

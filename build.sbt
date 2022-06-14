@@ -1,10 +1,12 @@
 import com.typesafe.sbt.packager.docker
 import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
+import com.typesafe.sbt.packager.docker._
 
 name := "pluto_versions_manager"
  
-version := "1.0" 
-      
+version := "1.0"
+
+
 lazy val `pluto_versions_manager` = (project in file("."))
   .enablePlugins(PlayScala, plugins.JUnitXmlReportPlugin)
   .enablePlugins(AshScriptPlugin) //needed for alpine-based images
@@ -13,9 +15,17 @@ lazy val `pluto_versions_manager` = (project in file("."))
     dockerExposedPorts := Seq(9000),
     dockerUsername  := sys.props.get("docker.username"),
     dockerRepository := Some("guardianmultimedia"),
-    packageName in Docker := "guardianmultimedia/pluto-versions-manager",
+    Docker / mappings ++= Seq(
+      (baseDirectory.value / "/dockerfile-customisation/sysctl-local.conf") -> "dockerfile-customisation/sysctl-local.conf"
+    ),
+    Docker / packageName := "guardianmultimedia/pluto-versions-manager",
+    Docker / dockerCommands ++= Seq(
+      Cmd("USER", "root"),
+      Cmd("COPY", "dockerfile-customisation/sysctl-local.conf", "/etc/sysctl.d/local.conf"),
+      Cmd("USER", "demiourgos728")
+    ),
     packageName := "pluto-versions-manager",
-    dockerBaseImage := "docker.io/openjdk:11.0.10-jre",
+    dockerBaseImage := "amazoncorretto:11-alpine",
     dockerPermissionStrategy := DockerPermissionStrategy.CopyChown,
     dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"pluto-versions-manager",Some(sys.props.getOrElse("build.number","DEV"))),
     scalacOptions ++= Seq("-deprecation", "-feature"),

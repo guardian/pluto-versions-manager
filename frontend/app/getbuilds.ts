@@ -1,5 +1,8 @@
 import axios from "axios";
-import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
+import {
+  SystemNotification,
+  SystemNotifcationKind,
+} from "@guardian/pluto-headers";
 
 function doubleEncode(str: string): string {
   return encodeURIComponent(encodeURIComponent(str));
