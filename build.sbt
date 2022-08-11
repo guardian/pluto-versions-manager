@@ -49,9 +49,9 @@ libraryDependencies += "io.circe" %% "circe-yaml" % "0.14.0"
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
-libraryDependencies += "io.skuber" %% "skuber" % "2.6.2"
+libraryDependencies += "io.skuber" %% "skuber" % "2.6.3"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.14"
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.15"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.7"
 
