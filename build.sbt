@@ -55,6 +55,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.15"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.7"
 
+libraryDependencies += "org.bouncycastle" % "bc-fips" % "1.0.2.1"
+
 //authentication
 libraryDependencies ++= Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % "9.15.2",
