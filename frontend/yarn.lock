@@ -326,7 +326,7 @@
 
 "@guardian/pluto-headers@2.0.0-pre4":
   version "2.0.0-pre4"
-  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/2.0.0-pre4/659ef2041b95eb421956bf9e99aeab881a2f82e56ac4ad52b709f3da292df5f1#c822927502c0b46e8162de81345125b0aed67ef7"
+  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/2.0.0-pre4/c822927502c0b46e8162de81345125b0aed67ef7#c822927502c0b46e8162de81345125b0aed67ef7"
   integrity sha512-BVqCz2DuGjsdE5zmOXv+FwpFqiZMxR7mUO+wjaFOlzg/D4fI3vbbGflZU0XLUrbDVtiXFqwANdi2c/V0bLeR7g==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
