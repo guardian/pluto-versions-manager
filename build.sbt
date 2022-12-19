@@ -33,7 +33,7 @@ lazy val `pluto_versions_manager` = (project in file("."))
 
 resolvers += "Akka Snapshot Repository" at "https://repo.akka.io/snapshots/"
       
-scalaVersion := "2.13.5"
+scalaVersion := "2.13.9"
 
 libraryDependencies ++= Seq( specs2 % Test , guice )
 
