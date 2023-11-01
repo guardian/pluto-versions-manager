@@ -16,6 +16,7 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+      packages: write
 
     steps:
       - uses: actions/checkout@v2
@@ -54,7 +55,7 @@ jobs:
       - run: if [ -d "junit-tests" ]; then mkdir junit-tests; fi
         name: Prepare test outputs location
 
-      - run: "echo -e \"\n//npm.pkg.github.com/:_authToken=${{secrets.ACTION}}\" >> .npmrc"
+      - run: "echo -e \"\n//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}\" >> .npmrc"
         working-directory: frontend
 
       - run: yarn install --frozen-lockfile
