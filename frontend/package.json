@@ -85,7 +85,7 @@
     "date-fns": "^2.16.1",
     "identity-obj-proxy": "^3.0.0",
     "js-cookie": "^2.2.1",
-    "jose": "^4.8.1",
+    "jose": "^4.15.5",
     "lodash": "^4.17.21",
     "lodash.omit": "^4.5.0",
     "@guardian/pluto-headers": "2.0.0-pre4",
