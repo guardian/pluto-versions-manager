@@ -51,7 +51,7 @@ libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
 libraryDependencies += "io.skuber" %% "skuber" % "2.6.7"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.15"
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.5.2"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.13"
 
@@ -75,3 +75,9 @@ libraryDependencies ++= Seq (
   "com.github.cb372" %% "scalacache-core",
   "com.github.cb372" %% "scalacache-circe",
 ).map(_ % scalacacheVersion)
+
+libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.6.19"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-serialization-jackson" % "2.6.19"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.6.19"
