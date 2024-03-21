@@ -76,8 +76,16 @@ libraryDependencies ++= Seq (
   "com.github.cb372" %% "scalacache-circe",
 ).map(_ % scalacacheVersion)
 
-libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.6.19"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.7.0"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-serialization-jackson" % "2.6.19"
+libraryDependencies += "com.typesafe.akka" %% "akka-serialization-jackson" % "2.7.0"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.6.19"
+libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-protobuf-v3" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.7.0"
