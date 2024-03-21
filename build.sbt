@@ -49,17 +49,17 @@ libraryDependencies += "io.circe" %% "circe-yaml" % "0.14.0"
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
-libraryDependencies += "io.skuber" %% "skuber" % "2.6.3"
+libraryDependencies += "io.skuber" %% "skuber" % "2.6.7"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.15"
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.5.2"
 
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.7"
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.13"
 
-libraryDependencies += "org.bouncycastle" % "bc-fips" % "1.0.2.1"
+libraryDependencies += "org.bouncycastle" % "bc-fips" % "1.0.2.4"
 
 //authentication
 libraryDependencies ++= Seq(
-  "com.nimbusds" % "nimbus-jose-jwt" % "9.15.2",
+  "com.nimbusds" % "nimbus-jose-jwt" % "9.37.2",
 )
 
 //testing
@@ -75,3 +75,17 @@ libraryDependencies ++= Seq (
   "com.github.cb372" %% "scalacache-core",
   "com.github.cb372" %% "scalacache-circe",
 ).map(_ % scalacacheVersion)
+
+libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-serialization-jackson" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-protobuf-v3" % "2.7.0"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.7.0"
