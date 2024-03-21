@@ -51,7 +51,7 @@ libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
 libraryDependencies += "io.skuber" %% "skuber" % "2.6.7"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.5.2"
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.15"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.13"
 
