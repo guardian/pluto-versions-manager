@@ -25,7 +25,8 @@
     ],
     "verbose": true,
     "moduleNameMapper": {
-      "\\.(css|less)$": "identity-obj-proxy"
+      "\\.(css|less)$": "identity-obj-proxy",
+      "^axios$": "axios/dist/node/axios.cjs"
     },
     "transform": {
       "^.+\\.[jt]sx?$": "ts-jest",
